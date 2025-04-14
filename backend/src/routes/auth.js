@@ -7,7 +7,7 @@ const router = express.Router();
 // 회원가입
 router.post('/signup', (req, res) => {
     console.log('🔥 /signup 요청 도착!');
-    res.send('회원가입 성공??');
+    res.send('회원가입 성공이라고 해라 제발');
 });
 
 // 로그인
