@@ -45,7 +45,7 @@ console.log('DB_HOST:', process.env.DB_HOST); // DB_HOST가 제대로 로드되�
 
         const PORT = process.env.PORT || 5000;
         app.listen(PORT, '0.0.0.0', () => {
-            console.log(`✅ 서버 실행 중: http://0.0.0.0:${PORT} ㄹㅇㅋㅋㅋ`);
+            console.log(`✅ 서버 실행 중: http://0.0.0.0:${PORT}`);
         });
     } catch (err) {
         console.error('❌ MySQL 연결 실패:', err.message);
