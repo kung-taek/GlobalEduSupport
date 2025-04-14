@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import gptRouter from './routes/gpt.js';
 import routeRouter from './routes/route.js';
 import authRouter from './routes/auth.js';
+import pool from './models/database.js';
 
 // ESM 환경에서 __dirname 정의
 const __filename = fileURLToPath(import.meta.url);
