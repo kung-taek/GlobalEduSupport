@@ -15,4 +15,15 @@ const pool = mysql.createPool({
     queueLimit: 0,
 });
 
+// 데이터베이스 연결 확인
+(async () => {
+    try {
+        const connection = await pool.getConnection();
+        console.log('✅ MySQL 연결 성공!');
+        connection.release();
+    } catch (err) {
+        console.error('❌ MySQL 연결 실패:', err.message);
+    }
+})();
+
 export default pool;
