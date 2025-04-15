@@ -38,7 +38,7 @@ console.log('DB_HOST:', process.env.DB_HOST); // DB_HOST가 제대로 로드되�
 
         // DB 연결 성공 후 서버 실행
         app.get('/', (req, res) => {
-            res.send('백엔드 서버 잘 작동 중!');
+            res.send('백엔드 서버 잘 작동 중!~~~');
         });
 
         app.use('/api/gpt', gptRouter);
