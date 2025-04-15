@@ -1,19 +1,12 @@
 import express from 'express';
 import { register, login } from '../controllers/authController.js';
-import { authenticateToken } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// 회원가입
-router.post('/signup', (req, res) => {
-    console.log('🔥 /signup 요청 도착! 했냐?');
-    res.send('회원가입 성공이라고 해ABC');
-});
+// 회원가입 라우트
+router.post('/signup', register);
 
-// 로그인
+// 로그인 라우트
 router.post('/login', login);
-
-// 로그인된 사용자 정보 확인 (JWT 필요)
-// router.get('/me', authenticateToken, getMe);
 
 export default router;
