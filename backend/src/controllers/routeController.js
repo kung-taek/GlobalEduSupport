@@ -2,6 +2,9 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 dotenv.config();
 
+// Kakao API 키 출력
+console.log('Kakao API Key (Backend):', process.env.KAKAO_REST_API_KEY);
+
 export const getRouteInfo = async (req, res) => {
     const { from, to } = req.body;
 

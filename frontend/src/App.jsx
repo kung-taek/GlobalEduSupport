@@ -13,7 +13,7 @@ function App() {
 
     const sendToGPT = async () => {
         try {
-            const res = await axios.post('http://localhost:5000/api/gpt', {
+            const res = await axios.post('http://13.124.18.66:5000/api/gpt', {
                 message: input,
             });
             setReply(res.data.reply);
@@ -25,7 +25,7 @@ function App() {
 
     const fetchRoute = async () => {
         try {
-            const response = await axios.post('http://localhost:5000/api/route', {
+            const response = await axios.post('http://13.124.18.66:5000/api/route', {
                 from,
                 to,
             });

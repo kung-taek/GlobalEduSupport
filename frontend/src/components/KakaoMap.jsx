@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 
+//경로
 const KakaoMap = ({ path, mapId = 'map' }) => {
     useEffect(() => {
         const loadKakaoMap = () => {
@@ -62,6 +63,9 @@ const KakaoMap = ({ path, mapId = 'map' }) => {
 
         loadKakaoMap();
     }, [path, mapId]);
+
+    // Kakao API 키 출력
+    console.log('Kakao API Key (Frontend):', 'dc81fb0ef560ec0b20d8bbd87ebbf591');
 
     return <div id={mapId} style={{ width: '100%', height: '500px', borderRadius: '12px', marginTop: '20px' }}></div>;
 };
