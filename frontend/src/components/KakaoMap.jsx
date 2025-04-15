@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 
+//경로로
 const KakaoMap = ({ path, mapId = 'map' }) => {
     useEffect(() => {
         const loadKakaoMap = () => {
