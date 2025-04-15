@@ -24,6 +24,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+//테스트222
+
 // 환경 변수 확인
 console.log('DB_HOST:', process.env.DB_HOST); // DB_HOST가 제대로 로드되는지 확인
 
