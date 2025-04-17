@@ -1,6 +1,6 @@
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import pool from '../models/database.js';
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const { pool } = require('../models/database.js');
 
 exports.register = async (req, res) => {
     const { username, email, password, provider = 'local', google_id = null } = req.body;

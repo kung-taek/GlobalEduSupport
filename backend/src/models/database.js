@@ -1,7 +1,7 @@
-import mysql from 'mysql2/promise';
-import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
+const mysql = require('mysql2/promise');
+const dotenv = require('dotenv');
+const path = require('path');
+const { fileURLToPath } = require('url');
 
 // ✅ ESM 환경에서 __dirname 설정
 const __filename = fileURLToPath(import.meta.url);
@@ -21,7 +21,7 @@ const pool = mysql.createPool({
     queueLimit: 0,
 });
 
-console.log("DB_HOST:", process.env.DB_HOST);
+console.log('DB_HOST:', process.env.DB_HOST);
 
 // 데이터베이스 연결 확인
 (async () => {
@@ -34,4 +34,4 @@ console.log("DB_HOST:", process.env.DB_HOST);
     }
 })();
 
-export default pool;
+exports.pool = pool;
