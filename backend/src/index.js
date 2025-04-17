@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import gptRouter from './routes/gpt.js';
 import kakaoRouter from './routes/kakao.js';
 import authRouter from './routes/auth.js';
+import gptKakaoRouter from './routes/gptKakao.js';
 import pool from './models/database.js';
 
 // ESM 환경에서 __dirname 정의
@@ -44,6 +45,7 @@ console.log('DB_HOST:', process.env.DB_HOST); // DB_HOST가 제대로 로드되�
         app.use('/api/gpt', gptRouter);
         app.use('/api/kakao', kakaoRouter);
         app.use('/api/auth', authRouter);
+        app.use('/api/gpt-kakao', gptKakaoRouter);
 
         const PORT = process.env.PORT || 5000;
         app.listen(PORT, '0.0.0.0', () => {
