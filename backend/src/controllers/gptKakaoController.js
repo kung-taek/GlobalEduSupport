@@ -15,25 +15,32 @@ export const getLocationCoordinates = async (req, res) => {
             messages: [
                 {
                     role: 'system',
-                    content: '너는 자연어 문장에서 장소명을 추출해 JSON만 응답하는 함수처럼 행동해야 해. 설명하지 마.',
+                    content:
+                        '너는 자연어 문장에서 출발지/도착지를 추출해 JSON으로만 응답하는 함수처럼 행동해야 해. 절대 설명하지 마.',
                 },
                 {
                     role: 'user',
                     content: `
-다음 문장에서 출발지/도착지를 추출해서 JSON으로만 반환해:
+아래 문장에서 출발지/도착지를 추출해서 정확히 아래 형식의 JSON만 응답해:
 
 예시1: "무풍면사무소에 가고 싶어" → { "location": "무풍면사무소" }
 예시2: "서울역에서 대전역으로 가고 싶어" → { "from": "서울역", "to": "대전역" }
 
 문장: "${message}"
 
-JSON 객체만 응답해. 설명하지 마. 따옴표 포함해서 정확하게 써.
+❗ 반드시 JSON으로만 응답하고, 텍스트 설명 절대 금지. 응답은 한 줄 JSON만!
             `,
                 },
             ],
         });
 
-        const parsed = JSON.parse(gptResponse.data.choices[0].message.content);
+        let parsed;
+        try {
+            parsed = JSON.parse(gptResponse.data.choices[0].message.content);
+        } catch (parseError) {
+            console.error('JSON 파싱 오류:', parseError);
+            return res.status(500).json({ error: 'JSON 파싱 실패' });
+        }
 
         const headers = { Authorization: `KakaoAK ${process.env.KAKAO_REST_API_KEY}` };
 
