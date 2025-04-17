@@ -14,15 +14,20 @@ export const getLocationCoordinates = async (req, res) => {
             model: 'gpt-3.5-turbo',
             messages: [
                 {
+                    role: 'system',
+                    content: '너는 자연어 문장에서 장소명을 추출해 JSON만 응답하는 함수처럼 행동해야 해. 설명하지 마.',
+                },
+                {
                     role: 'user',
                     content: `
-다음 문장에서 장소 또는 출발지/도착지를 추출해서 JSON 형식으로 응답해줘.
+다음 문장에서 출발지/도착지를 추출해서 JSON으로만 반환해:
 
 예시1: "무풍면사무소에 가고 싶어" → { "location": "무풍면사무소" }
 예시2: "서울역에서 대전역으로 가고 싶어" → { "from": "서울역", "to": "대전역" }
 
-절대 설명 없이 JSON 객체만 응답해.
 문장: "${message}"
+
+JSON 객체만 응답해. 설명하지 마. 따옴표 포함해서 정확하게 써.
             `,
                 },
             ],
