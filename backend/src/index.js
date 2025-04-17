@@ -1,15 +1,15 @@
 // index.js
 
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import gptRouter from './routes/gpt.js';
-import kakaoRouter from './routes/kakao.js';
-import authRouter from './routes/auth.js';
-import gptKakaoRouter from './routes/gptKakao.js';
-import pool from './models/database.js';
+const express = require('express');
+const cors = require('cors');
+const dotenv = require('dotenv');
+const path = require('path');
+const { fileURLToPath } = require('url');
+const gptRouter = require('./routes/gpt.js');
+const kakaoRouter = require('./routes/kakao.js');
+const authRouter = require('./routes/auth.js');
+const gptKakaoRouter = require('./routes/gptKakao.js');
+const pool = require('./models/database.js');
 
 // ESM 환경에서 __dirname 정의
 const __filename = fileURLToPath(import.meta.url);
