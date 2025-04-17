@@ -1,9 +1,9 @@
-const { OpenAI } = require('openai');
-const dotenv = require('dotenv');
+import { OpenAI } from 'openai';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
-exports.handleGPTMessage = async (req, res) => {
+export const handleGPTMessage = async (req, res) => {
     const { message } = req.body;
 
     if (!message) {
@@ -30,7 +30,7 @@ exports.handleGPTMessage = async (req, res) => {
 };
 
 // GPT를 사용하여 장소나 출발지/도착지를 추출하는 함수
-exports.extractLocationFromGPT = async (req, res) => {
+export const extractLocationFromGPT = async (req, res) => {
     const { message } = req.body;
     try {
         const response = await openai.createChatCompletion({

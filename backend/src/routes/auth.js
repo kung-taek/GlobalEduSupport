@@ -1,12 +1,12 @@
-const express = require('express');
-const { register, login } = require('../controllers/authController.js');
+import express from 'express';
+import { register, login } from '../controllers/authController.js';
 
 const router = express.Router();
 
 // 회원가입 라우트
-router.post('/signup', register);
+router.post('/register', register);
 
 // 로그인 라우트
 router.post('/login', login);
 
-module.exports = router;
+export default router;

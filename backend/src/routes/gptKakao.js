@@ -1,8 +1,8 @@
-const express = require('express');
-const { getLocationCoordinates } = require('../controllers/gptKakaoController.js');
+import express from 'express';
+import { getLocationCoordinates } from '../controllers/gptKakaoController.js';
 
 const router = express.Router();
 
 router.post('/gpt-location', getLocationCoordinates);
 
-module.exports = router;
+export default router;

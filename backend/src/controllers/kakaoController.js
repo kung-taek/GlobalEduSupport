@@ -1,12 +1,12 @@
-const axios = require('axios');
-const dotenv = require('dotenv');
+import axios from 'axios';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
 // Kakao API 키 출력
 console.log('Kakao API Key (Backend):', process.env.KAKAO_REST_API_KEY);
 
-exports.getRouteInfo = async (req, res) => {
+export const getRouteInfo = async (req, res) => {
     const { from, to } = req.body;
 
     try {
@@ -50,7 +50,7 @@ exports.getRouteInfo = async (req, res) => {
 };
 
 // Kakao 장소 검색 API를 사용하여 키워드로 위치를 검색하는 함수
-exports.searchKeyword = async (req, res) => {
+export const searchKeyword = async (req, res) => {
     const { keyword } = req.body;
     try {
         const response = await axios.get('https://dapi.kakao.com/v2/local/search/keyword.json', {
