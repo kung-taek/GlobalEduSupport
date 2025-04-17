@@ -23,6 +23,22 @@ function App() {
         }
     };
 
+    const sendToGPTLocation = async () => {
+        try {
+            const res = await axios.post('http://13.124.18.66:5000/api/gpt-location', {
+                message: input,
+            });
+            if (res.data.type === 'route') {
+                setPath(res.data);
+            } else if (res.data.type === 'location') {
+                setSubmittedAddress(res.data);
+            }
+        } catch (err) {
+            console.error(err);
+            setReply('에러가 발생했습니다.');
+        }
+    };
+
     const fetchRoute = async () => {
         try {
             const response = await axios.post('http://13.124.18.66:5000/api/route', {
@@ -80,6 +96,9 @@ function App() {
             />
             <button onClick={fetchRoute}>경로 가져오기</button>
             <KakaoMap path={path} />
+
+            <button onClick={sendToGPTLocation}>지도 연동 전송</button>
+            <KakaoMap path={path} address={submittedAddress} />
         </div>
     );
 }
