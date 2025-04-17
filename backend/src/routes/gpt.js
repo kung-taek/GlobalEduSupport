@@ -1,8 +1,8 @@
-const express = require('express');
-const { handleGPTMessage } = require('../controllers/gptController.js');
+import express from 'express';
+import { handleGPTMessage } from '../controllers/gptController.js';
 
 const router = express.Router();
 
 router.post('/', handleGPTMessage);
 
-module.exports = router;
+export default router;

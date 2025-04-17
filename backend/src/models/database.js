@@ -1,7 +1,7 @@
-const mysql = require('mysql2/promise');
-const dotenv = require('dotenv');
-const path = require('path');
-const { fileURLToPath } = require('url');
+import mysql from 'mysql2/promise';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 // ✅ ESM 환경에서 __dirname 설정
 const __filename = fileURLToPath(import.meta.url);
@@ -34,4 +34,4 @@ console.log('DB_HOST:', process.env.DB_HOST);
     }
 })();
 
-exports.pool = pool;
+export { pool };

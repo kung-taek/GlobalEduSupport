@@ -1,8 +1,8 @@
-const express = require('express');
-const { searchKeyword } = require('../controllers/kakaoController.js');
+import express from 'express';
+import { searchKeyword } from '../controllers/kakaoController.js';
 
 const router = express.Router();
 
 router.post('/search', searchKeyword);
 
-module.exports = router;
+export default router;

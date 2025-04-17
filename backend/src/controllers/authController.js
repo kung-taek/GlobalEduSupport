@@ -1,8 +1,8 @@
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const { pool } = require('../models/database.js');
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { pool } from '../models/database.js';
 
-exports.register = async (req, res) => {
+export const register = async (req, res) => {
     const { username, email, password, provider = 'local', google_id = null } = req.body;
     try {
         // 이메일 중복 검사
@@ -29,7 +29,7 @@ exports.register = async (req, res) => {
     }
 };
 
-exports.login = async (req, res) => {
+export const login = async (req, res) => {
     const { email, password } = req.body;
     try {
         // 유저 조회
