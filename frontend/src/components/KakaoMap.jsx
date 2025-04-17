@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
+import axios from 'axios';
 
-
-const KakaoMap = ({ path, mapId = 'map' }) => {
+const KakaoMap = ({ path, address, mapId = 'map' }) => {
     useEffect(() => {
         const loadKakaoMap = () => {
             if (window.kakao && window.kakao.maps) {
@@ -23,6 +23,21 @@ const KakaoMap = ({ path, mapId = 'map' }) => {
                 center: new window.kakao.maps.LatLng(35.9, 128.8),
                 level: 5,
             });
+
+            if (address) {
+                const geocoder = new window.kakao.maps.services.Geocoder();
+                geocoder.addressSearch(address, function (result, status) {
+                    if (status === window.kakao.maps.services.Status.OK) {
+                        const coords = new window.kakao.maps.LatLng(result[0].y, result[0].x);
+                        map.setCenter(coords);
+                        new window.kakao.maps.Marker({
+                            map: map,
+                            position: coords,
+                            title: address,
+                        });
+                    }
+                });
+            }
 
             if (path && path.length > 0) {
                 const linePath = [];
@@ -62,7 +77,7 @@ const KakaoMap = ({ path, mapId = 'map' }) => {
         };
 
         loadKakaoMap();
-    }, [path, mapId]);
+    }, [path, address, mapId]);
 
     // Kakao API 키 출력
     console.log('Kakao API Key (Frontend):', 'dc81fb0ef560ec0b20d8bbd87ebbf591');

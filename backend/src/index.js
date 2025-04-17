@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import gptRouter from './routes/gpt.js';
-import routeRouter from './routes/route.js';
+import kakaoRouter from './routes/kakao.js';
 import authRouter from './routes/auth.js';
 import pool from './models/database.js';
 
@@ -42,7 +42,7 @@ console.log('DB_HOST:', process.env.DB_HOST); // DB_HOST가 제대로 로드되�
         });
 
         app.use('/api/gpt', gptRouter);
-        app.use('/api/route', routeRouter);
+        app.use('/api/kakao', kakaoRouter);
         app.use('/api/auth', authRouter);
 
         const PORT = process.env.PORT || 5000;
