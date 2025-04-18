@@ -38,3 +38,4 @@ console.log('DB_HOST:', process.env.DB_HOST);
 })();
 
 
+export default pool;
