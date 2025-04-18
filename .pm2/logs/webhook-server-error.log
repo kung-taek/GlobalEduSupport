@@ -303,3 +303,24 @@ stderr: From https://github.com/kung-taek/GlobalEduSupport
  + 72d23e8...65f2ff8 main       -> origin/main  (forced update)
 fatal: refusing to merge unrelated histories
 
+❌ Deploy error!
+err: Error: Command failed: cd /home/ubuntu/GlobalEduSupport && git pull origin main && pm2 restart backend
+From https://github.com/kung-taek/GlobalEduSupport
+ * branch            main       -> FETCH_HEAD
+   65f2ff8..1ee7fce  main       -> origin/main
+fatal: refusing to merge unrelated histories
+
+    at ChildProcess.exithandler (node:child_process:422:12)
+    at ChildProcess.emit (node:events:517:28)
+    at maybeClose (node:internal/child_process:1098:16)
+    at ChildProcess._handle.onexit (node:internal/child_process:303:5) {
+  code: 128,
+  killed: false,
+  signal: null,
+  cmd: 'cd /home/ubuntu/GlobalEduSupport && git pull origin main && pm2 restart backend'
+}
+stderr: From https://github.com/kung-taek/GlobalEduSupport
+ * branch            main       -> FETCH_HEAD
+   65f2ff8..1ee7fce  main       -> origin/main
+fatal: refusing to merge unrelated histories
+

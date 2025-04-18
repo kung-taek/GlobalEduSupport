@@ -740,3 +740,105 @@ pm2 logs
 nano .env
 pm2 logs
 pm2 restart globalhelper
+cd ~backend
+cd /~backend
+cd ~/backend
+nano /home/ubuntu/GlobalEduSupport/backend/src/database.js
+pm2 logs
+git add backend/src/database.js
+git commit -m "Add DB connector"
+git push origin main
+nano backend/src/models/database.js
+git add backend/src/database.js
+git commit -m "Add database connection file"
+git push origin main
+git add backend/src/database.js
+git commit -m "restore database.js"
+git push origin main --force
+git add backend/src/database.js
+git commit -m "restore database.js"
+git push origin main --force
+git add backend/src/models/database.js
+git commit -m "restore database.js"
+git push origin main --force
+git rm --cached .ssh/id_rsa
+git rm --cached .bash_history
+git reset HEAD^
+git add .
+git commit -m "Clean up sensitive files"
+git push origin main --force
+git rm --cached .ssh/id_rsa
+git rm --cached .ssh/id_rsa.pub
+git reset HEAD^
+echo ".ssh/" >> .gitignore
+git add .gitignore
+git commit -m "Ignore .ssh directory"
+git add backend/src/database.js
+git commit -m "restore database.js without secrets"
+git push origin main
+git push origin main --force
+pm2 list
+pm2 restart
+git config --global user.name "chanpa"
+git config --global user.email "chanpa2167@naver.com"
+pm2 restart
+pm2 restart backend
+pm2 restart all
+pm2 logs
+git add .
+git commit -m "Fix: correct DB import path"
+git push
+cd ~/GlobalEduSupport
+git pull origin main
+pm2 restart backend
+pm2 logs
+git add backend/src/models/database.js
+git commit -m "Add database.js for DB connection"
+git push
+git add backend/src/models/database.js
+git commit -m "Add database.js for DB connection"
+git add backend/src/models/database.js
+git commit -m "Add DB connection and ignore settings"
+ls backend/src/models/
+git add backend/src/models/database.js
+git commit -m "Add DB connection file"
+git status
+git check-ignore -v backend/src/models/database.js
+git status
+git rm --cached backend/src/models/database.js
+git add backend/src/models/database.js
+git commit -m "Add database.js again"
+git diff --cached
+nano backend/src/models/database.js
+git add backend/src/models/database.js
+git commit -m "Restore and track database.js"
+git pull origin main --allow-unrelated-histories
+# 충돌 있으면 해결 후
+git push origin main
+nano .gitignore
+git add .gitignore
+git commit -m "Resolve merge conflict in .gitignore"
+git push origin main
+pm2 restart backend
+pm2 logs
+git rm --cached backend/src/models/database.js
+git add backend/src/models/database.js
+git commit -m "Track database.js permanently"
+git push origin main
+git add -f backend/src/models/database.js
+git commit -m "Force add database.js to track permanently"
+git push origin main
+git add -f backend/src/models/database.js
+git commit -m "Force add database.js to track permanently"
+ls -al backend/src/models/database.js
+git status
+git rm --cached backend/src/models/database.js
+git add backend/src/models/database.js
+git commit -m "Fix: track database.js again"
+ls -al backend/src/models/database.js
+git check-ignore -v backend/src/models/database.js
+git rm --cached -r .
+git add .
+git commit -m "강제 트래킹 리셋"
+cat .git/info/exclude
+nd/node_modules/long/LICENSE
