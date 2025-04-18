@@ -27,4 +27,9 @@ router.get('/google/callback', passport.authenticate('google', { failureRedirect
     // 또는 프론트엔드 주소로 리디렉션
 });
 
+router.get('/test', (req, res) => {
+    res.send('✅ 테스트 라우터 성공!');
+  });
+  
+
 export default router;
