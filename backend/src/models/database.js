@@ -37,4 +37,5 @@ console.log('DB_HOST:', process.env.DB_HOST);
     }
 })();
 
-export { pool };
+export default pool;
+
