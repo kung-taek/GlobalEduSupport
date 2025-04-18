@@ -18,7 +18,6 @@ router.get('/google/callback', passport.authenticate('google', { failureRedirect
     // 로그인 성공 시 처리 (응답 or 리디렉션)
     res.send('✅ Google 로그인 성공!');
     // 또는 프론트엔드 주소로 리디렉션
-    // res.redirect('http://localhost:3000');
 });
 
 export default router;
