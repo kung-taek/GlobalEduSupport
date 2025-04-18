@@ -1,7 +1,7 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import dotenv from 'dotenv';
-import db from '../database.js'; // 네가 사용하는 DB 연결 파일 경로
+import db from '../models/database.js'; // 네가 사용하는 DB 연결 파일 경로
 
 dotenv.config();
 
