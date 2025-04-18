@@ -10,6 +10,8 @@ const __dirname = path.dirname(__filename);
 // ✅ 정확한 .env 경로로 환경변수 로드
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
+
+
 // MySQL 연결 설정
 const pool = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
