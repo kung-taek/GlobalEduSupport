@@ -13,7 +13,7 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 
 // MySQL 연결 설정
-const pool = mysql.createPool({
+export const pool = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
@@ -37,5 +37,4 @@ console.log('DB_HOST:', process.env.DB_HOST);
     }
 })();
 
-export default pool;
 
