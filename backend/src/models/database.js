@@ -21,6 +21,7 @@ const pool = mysql.createPool({
     queueLimit: 0,
 });
 
+//DB HOST 확인
 console.log('DB_HOST:', process.env.DB_HOST);
 
 // 데이터베이스 연결 확인
