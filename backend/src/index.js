@@ -15,6 +15,8 @@ import './middleware/passport.js'; // Initialize passport configuration
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+
+
 // ✅ .env 경로 명시
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
