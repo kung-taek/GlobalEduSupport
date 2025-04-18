@@ -1,7 +1,7 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import dotenv from 'dotenv';
-import { db } from '../models/database.js';
+import pool from '../database.js';
 
 dotenv.config();
 
@@ -19,11 +19,11 @@ passport.use(
                 const username = profile.displayName;
 
                 // 기존 사용자 조회
-                const [rows] = await db.query('SELECT * FROM users WHERE google_id = ?', [googleId]);
+                const [rows] = await pool.query('SELECT * FROM users WHERE google_id = ?', [googleId]);
 
                 if (rows.length === 0) {
                     // 사용자 없으면 추가
-                    await db.query(
+                    await pool.query(
                         "INSERT INTO users (username, email, provider, google_id) VALUES (?, ?, 'google', ?)",
                         [username, email, googleId]
                     );
