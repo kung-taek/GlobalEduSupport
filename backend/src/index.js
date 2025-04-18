@@ -9,6 +9,7 @@ import kakaoRouter from './routes/kakao.js';
 import authRouter from './routes/auth.js';
 import gptKakaoRouter from './routes/gptKakao.js';
 import { pool } from './models/database.js';
+import './middleware/passport.js'; // Initialize passport configuration
 
 // ESM 환경에서 __dirname 정의
 const __filename = fileURLToPath(import.meta.url);
@@ -23,6 +24,16 @@ console.log('🔑 API KEY:', process.env.OPENAI_API_KEY);
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+app.use(session({
+    secret: 'google_globalhelper_secret_key', // 원하는 비밀 키 (노출 주의)
+    resave: false,
+    saveUninitialized: false,
+  }));
+  
+  app.use(passport.initialize());
+  app.use(passport.session());
+  
 
 //테스트222
 
