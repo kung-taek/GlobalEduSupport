@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { pool } from '../models/database.js';
 
+//일반 회원가입입
 export const register = async (req, res) => {
     const { username, email, password, provider = 'local', google_id = null } = req.body;
     try {
