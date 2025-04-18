@@ -1,26 +1,35 @@
-import express from 'express';
+import http from 'http';
 import { exec } from 'child_process';
 
-const app = express();
-const PORT = 4000;
+const server = http.createServer((req, res) => {
+  if (req.method === 'POST') {
+    console.log('📨 Webhook POST 요청 수신됨');
 
-app.use(express.json());
+    // 절대 경로 + 정확한 앱 이름 사용
+    const command = 'cd /home/ubuntu/GlobalEduSupport && git pull origin main && pm2 restart backend'; // <-- 'backend'는 실제 앱 이름에 맞게!
 
-app.post('/webhook', (req, res) => {
-  console.log('📦 웹훅 요청 도착!');
-  exec('bash ~/deploy.sh', (error, stdout, stderr) => {
-    if (error) {
-      console.error(`❌ 에러: ${error.message}`);
-      return res.status(500).send('실행 실패');
-    }
-    if (stderr) {
-      console.error(`⚠️ stderr: ${stderr}`);
-    }
-    console.log(`✅ stdout: ${stdout}`);
-    res.status(200).send('배포 완료');
-  });
+    exec(command, (err, stdout, stderr) => {
+      if (err) {
+        console.error('❌ Deploy error!');
+        console.error('err:', err);
+        console.error('stderr:', stderr);
+        res.writeHead(500);
+        res.end('Deploy failed');
+        return;
+      }
+
+      console.log('✅ Deploy success!');
+      console.log('stdout:', stdout);
+      res.writeHead(200);
+      res.end('Deploy successful');
+    });
+  } else {
+    res.writeHead(405);
+    res.end('Only POST allowed');
+  }
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 웹훅 서버 실행 중! http://localhost:${PORT}`);
+server.listen(4000, () => {
+  console.log('🚀 Webhook server listening on port 4000');
 });
+
