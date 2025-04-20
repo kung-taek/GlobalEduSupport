@@ -1,7 +1,9 @@
 import express from 'express';
 import { register, login } from '../controllers/authController.js';
 import passport from 'passport';
+import dotenv from 'dotenv';
 
+dotenv.config();
 const router = express.Router();
 
 // 일반 회원가입 처리
@@ -10,26 +12,26 @@ router.post('/register', register);
 // 일반 로그인 처리
 router.post('/login', login);
 
-// Google OAuth 로그인 시작점
+// Google OAuth 로그인 시작
 router.get(
     '/google',
     passport.authenticate('google', {
         scope: ['profile', 'email'],
-        prompt: 'select_account', // 항상 계정 선택 화면 표시
+        prompt: 'select_account',
+        accessType: 'offline',
     })
 );
 
-// Google OAuth 로그인 완료 후 콜백 처리
+// Google OAuth 콜백
 router.get(
     '/google/callback',
     passport.authenticate('google', {
-        failureRedirect: 'http://13.124.18.66:3000/login?error=google_login_failed',
+        failureRedirect: `${process.env.FRONTEND_URL}/login?error=google_login_failed`,
         session: false,
     }),
     (req, res) => {
-        // 프론트엔드로 리다이렉트 (토큰 포함)
         const token = req.user.token;
-        res.redirect(`http://13.124.18.66:3000/auth/callback?token=${token}`);
+        res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${token}`);
     }
 );
 

@@ -6,12 +6,13 @@ import jwt from 'jsonwebtoken';
 
 dotenv.config();
 
+// Google OAuth 전략 설정
 passport.use(
     new GoogleStrategy(
         {
             clientID: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            callbackURL: 'http://13.124.18.66:5000/api/auth/google/callback',
+            callbackURL: process.env.GOOGLE_CALLBACK_URL,
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
@@ -19,29 +20,29 @@ passport.use(
                 const email = profile.emails[0].value;
                 const username = profile.displayName;
 
-                // 기존 사용자 조회 (google_id 또는 email로)
-                const [rows] = await pool.query('SELECT * FROM users WHERE google_id = ? OR email = ?', [
+                // 기존 사용자 확인
+                const [users] = await pool.query('SELECT * FROM users WHERE google_id = ? OR email = ?', [
                     googleId,
                     email,
                 ]);
 
                 let user;
-                if (rows.length === 0) {
-                    // 새 사용자 추가
+                if (users.length === 0) {
+                    // 새 사용자 생성
                     const [result] = await pool.query(
-                        "INSERT INTO users (username, email, provider, google_id) VALUES (?, ?, 'google', ?)",
-                        [username, email, googleId]
+                        'INSERT INTO users (username, email, google_id, provider) VALUES (?, ?, ?, ?)',
+                        [username, email, googleId, 'google']
                     );
                     user = {
                         id: result.insertId,
-                        email,
                         username,
+                        email,
                         googleId,
                         provider: 'google',
                     };
                 } else {
-                    user = rows[0];
-                    // 기존 로컬 사용자가 구글 로그인을 시도하는 경우
+                    user = users[0];
+                    // 기존 사용자의 Google 정보 업데이트
                     if (!user.google_id) {
                         await pool.query('UPDATE users SET google_id = ?, provider = ? WHERE id = ?', [
                             googleId,
@@ -57,14 +58,26 @@ passport.use(
                 });
 
                 return done(null, { ...user, token });
-            } catch (err) {
-                return done(err, null);
+            } catch (error) {
+                return done(error, null);
             }
         }
     )
 );
 
-passport.serializeUser((user, done) => done(null, user));
-passport.deserializeUser((user, done) => done(null, user));
+// 세션 직렬화
+passport.serializeUser((user, done) => {
+    done(null, user.id);
+});
+
+// 세션 역직렬화
+passport.deserializeUser(async (id, done) => {
+    try {
+        const [users] = await pool.query('SELECT * FROM users WHERE id = ?', [id]);
+        done(null, users[0]);
+    } catch (error) {
+        done(error, null);
+    }
+});
 
 export default passport;

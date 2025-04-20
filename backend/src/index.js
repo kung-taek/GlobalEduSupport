@@ -3,7 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import session from 'express-session';
-import passport from 'passport';
+import passport from './middleware/passport.js';
 import { fileURLToPath } from 'url';
 
 // 라우터 불러오기
@@ -14,9 +14,6 @@ import gptKakaoRouter from './routes/gptKakao.js';
 
 // DB 연결
 import { pool } from './models/database.js';
-
-// Passport 설정 불러오기
-import './middleware/passport.js';
 
 // ESM 환경에서 __dirname 설정
 const __filename = fileURLToPath(import.meta.url);
@@ -31,17 +28,31 @@ console.log('✅ DB_HOST:', process.env.DB_HOST);
 console.log('✅ Kakao API Key:', process.env.KAKAO_REST_API_KEY);
 
 const app = express();
-app.use(cors());
+
+// 미들웨어 설정
+app.use(
+    cors({
+        origin: process.env.FRONTEND_URL,
+        credentials: true,
+    })
+);
 app.use(express.json());
 
 // 세션 설정
-app.use(session({
-  secret: 'google_globalhelper_secret_key', // 안전한 키로 대체 필요
-  resave: false,
-  saveUninitialized: false,
-}));
+app.use(
+    session({
+        secret: process.env.SESSION_SECRET,
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+            secure: process.env.NODE_ENV === 'production',
+            httpOnly: true,
+            maxAge: 24 * 60 * 60 * 1000, // 24시간
+        },
+    })
+);
 
-// Passport 미들웨어 설정
+// Passport 초기화
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -53,22 +64,22 @@ app.use('/api/gpt-kakao', gptKakaoRouter);
 
 // 루트 테스트
 app.get('/', (req, res) => {
-  res.send('✅ 백엔드 서버가 정상 작동 중입니다!');
+    res.send('✅ 백엔드 서버가 정상 작동 중입니다!');
 });
 
 // DB 연결 확인 후 서버 시작
 const PORT = process.env.PORT || 5000;
 
 (async () => {
-  try {
-    const connection = await pool.getConnection();
-    console.log('✅ MySQL 연결 성공!');
-    connection.release();
+    try {
+        const connection = await pool.getConnection();
+        console.log('✅ MySQL 연결 성공!');
+        connection.release();
 
-    app.listen(PORT, '0.0.0.0', () => {
-      console.log(`✅ 서버 실행 중: http://0.0.0.0:${PORT}`);
-    });
-  } catch (err) {
-    console.error('❌ MySQL 연결 실패:', err.message);
-  }
+        app.listen(PORT, '0.0.0.0', () => {
+            console.log(`✅ 서버 실행 중: http://0.0.0.0:${PORT}`);
+        });
+    } catch (err) {
+        console.error('❌ MySQL 연결 실패:', err.message);
+    }
 })();

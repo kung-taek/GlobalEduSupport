@@ -9,7 +9,7 @@ function AuthCallback() {
         const token = searchParams.get('token');
         if (token) {
             localStorage.setItem('token', token);
-            navigate('/'); // 메인 페이지로 이동
+            navigate('/'); // 메인 페이지로 리다이렉트
         } else {
             navigate('/login'); // 토큰이 없으면 로그인 페이지로
         }

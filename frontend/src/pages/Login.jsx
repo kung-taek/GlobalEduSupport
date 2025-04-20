@@ -11,7 +11,7 @@ function Login() {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://13.124.18.66:5000/api/auth/login', {
+            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/login`, {
                 email,
                 password,
             });
@@ -25,12 +25,13 @@ function Login() {
     };
 
     const handleGoogleLogin = () => {
-        // 구글 로그인 페이지로 리다이렉트
-        window.location.href = 'http://13.124.18.66:5000/api/auth/google';
+        // 백엔드 서버의 Google OAuth 로그인 엔드포인트로 리다이렉트
+        window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/auth/google`;
     };
 
     return (
         <div
+            className="login-container"
             style={{
                 maxWidth: '400px',
                 margin: '40px auto',
