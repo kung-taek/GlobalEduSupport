@@ -41,7 +41,7 @@ app.use(express.json());
 // 세션 설정
 app.use(
     session({
-        secret: process.env.SESSION_SECRET,
+        secret: process.env.SESSION_SECRET || 'globalhelper_default_secret',
         resave: false,
         saveUninitialized: false,
         cookie: {
@@ -49,6 +49,7 @@ app.use(
             httpOnly: true,
             maxAge: 24 * 60 * 60 * 1000, // 24시간
         },
+        name: 'globalhelper.sid', // 세션 쿠키 이름 설정 (선택사항)
     })
 );
 
