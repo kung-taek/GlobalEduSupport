@@ -1,21 +1,26 @@
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const path = require('path');
-const session = require('express-session');
-const passport = require('./middleware/passport');
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import path from 'path';
+import session from 'express-session';
+import passport from './middleware/passport.js';
+import { fileURLToPath } from 'url';
 
 // 라우터 불러오기
-const gptRouter = require('./routes/gpt');
-const kakaoRouter = require('./routes/kakao');
-const authRouter = require('./routes/auth');
-const gptKakaoRouter = require('./routes/gptKakao');
+import gptRouter from './routes/gpt.js';
+import kakaoRouter from './routes/kakao.js';
+import authRouter from './routes/auth.js';
+import gptKakaoRouter from './routes/gptKakao.js';
 
 // DB 연결
-const { pool } = require('./models/database');
+import { pool } from './models/database.js';
+
+// ESM 환경에서 __dirname 설정
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // .env 파일 로드
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
 

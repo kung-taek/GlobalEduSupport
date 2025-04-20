@@ -1,12 +1,16 @@
-const mysql = require('mysql2/promise');
-const dotenv = require('dotenv');
-const path = require('path');
+import mysql from 'mysql2/promise';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ✅ 정확한 .env 경로로 환경변수 로드
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 // MySQL 연결 설정
-const pool = mysql.createPool({
+export const pool = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
@@ -31,5 +35,3 @@ console.log('DB_HOST:', process.env.DB_HOST);
         console.error('❌ MySQL 연결 실패:', err.message);
     }
 })();
-
-module.exports = { pool };

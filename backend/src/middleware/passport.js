@@ -1,8 +1,8 @@
-const passport = require('passport');
-const { Strategy: GoogleStrategy } = require('passport-google-oauth20');
-const dotenv = require('dotenv');
-const { pool } = require('../models/database');
-const jwt = require('jsonwebtoken');
+import passport from 'passport';
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import dotenv from 'dotenv';
+import { pool } from '../models/database.js';
+import jwt from 'jsonwebtoken';
 
 dotenv.config();
 
@@ -80,4 +80,4 @@ passport.deserializeUser(async (id, done) => {
     }
 });
 
-module.exports = passport;
+export default passport;
