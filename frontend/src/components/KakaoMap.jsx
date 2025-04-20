@@ -24,18 +24,13 @@ const KakaoMap = ({ path, address, mapId = 'map' }) => {
                 level: 5,
             });
 
-            if (address) {
-                const geocoder = new window.kakao.maps.services.Geocoder();
-                geocoder.addressSearch(address, function (result, status) {
-                    if (status === window.kakao.maps.services.Status.OK) {
-                        const coords = new window.kakao.maps.LatLng(result[0].y, result[0].x);
-                        map.setCenter(coords);
-                        new window.kakao.maps.Marker({
-                            map: map,
-                            position: coords,
-                            title: address,
-                        });
-                    }
+            if (address && address.lat && address.lng) {
+                const coords = new window.kakao.maps.LatLng(address.lat, address.lng);
+                map.setCenter(coords);
+                new window.kakao.maps.Marker({
+                    map: map,
+                    position: coords,
+                    title: address.name || '검색 위치',
                 });
             }
 
