@@ -13,17 +13,25 @@ router.post('/login', login);
 // Google OAuth 로그인 시작점
 router.get(
     '/google',
-    (req, res, next) => {
-        console.log('🛠️ /google 라우터 진입!');
-        next();
-    },
-    passport.authenticate('google', { scope: ['profile', 'email'] })
+    passport.authenticate('google', {
+        scope: ['profile', 'email'],
+        prompt: 'select_account', // 항상 계정 선택 화면 표시
+    })
 );
 
 // Google OAuth 로그인 완료 후 콜백 처리
-router.get('/google/callback', passport.authenticate('google', { failureRedirect: '/login' }), (req, res) => {
-    res.send('✅ Google 로그인 성공!');
-});
+router.get(
+    '/google/callback',
+    passport.authenticate('google', {
+        failureRedirect: 'http://13.124.18.66:3000/login?error=google_login_failed',
+        session: false,
+    }),
+    (req, res) => {
+        // 프론트엔드로 리다이렉트 (토큰 포함)
+        const token = req.user.token;
+        res.redirect(`http://13.124.18.66:3000/auth/callback?token=${token}`);
+    }
+);
 
 // 인증 테스트용 엔드포인트
 router.get('/test', (req, res) => {
