@@ -41,7 +41,7 @@ function App() {
 
     const fetchRoute = async () => {
         try {
-            const response = await axios.post('http://13.124.18.66:5000/api/route', {
+            const response = await axios.post('http://13.124.18.66:5000/api/kakao/route', {
                 from,
                 to,
             });
