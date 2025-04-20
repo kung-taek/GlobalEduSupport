@@ -15,29 +15,27 @@ export const getLocationCoordinates = async (req, res) => {
             messages: [
                 {
                     role: 'system',
-                    content: `너는 텍스트에서 장소 정보만 추출하는 파서야.
-입력된 텍스트에 장소나 위치가 언급되면 반드시 JSON 형식으로 추출해야 해.
-장소 이름만 깔끔하게 추출하고, 다른 정보는 모두 무시해.
-설명, 주소 등은 제외하고 핵심 장소 이름만 추출해.`,
+                    content: `너는 사용자의 메시지에서 장소나 경로 정보를 추출하는 파서야. 
+다음 규칙을 반드시 따라야 해:
+1. "A에서 B로 가고 싶어", "A에서 B까지 가는 길" 같은 경로 요청은 반드시 {"from":"A", "to":"B"} 형식으로 응답
+2. 단일 장소 질문은 {"location":"장소명"} 형식으로 응답
+3. 설명이나 다른 정보는 무시하고 장소 정보만 추출`,
                 },
                 {
                     role: 'user',
-                    content: `다음은 입력과 출력의 예시야:
+                    content: `다음과 같은 형식으로 장소/경로 정보를 JSON으로 변환해줘:
+
+입력: "하양읍에서 동대구역까지 가고 싶어"
+출력: {"from":"하양읍","to":"동대구역"}
 
 입력: "서울대학교 위치 알려줘"
 출력: {"location":"서울대학교"}
 
-입력: "서울대학교는 서울특별시 관악구 관악로 1에 있어"
-출력: {"location":"서울대학교"}
+입력: "하양에서 동대구로 가는 길 알려줘"
+출력: {"from":"하양","to":"동대구"}
 
-입력: "강남역에서 역삼역까지 가는 길 알려줘"
-출력: {"from":"강남역","to":"역삼역"}
-
-입력: "서울역에서 부산역까지 어떻게 가?"
-출력: {"from":"서울역","to":"부산역"}
-
-지금부터 이 입력을 분석해줘. 반드시 위와 같은 JSON 형식으로만 답변해:
-"${message}"`,
+입력: "${message}"
+JSON으로만 응답해. 설명하지 마.`,
                 },
             ],
         });
@@ -45,7 +43,7 @@ export const getLocationCoordinates = async (req, res) => {
         let parsed;
         try {
             const content = gptResponse.choices[0].message.content.trim();
-            console.log('GPT Response:', content);
+            console.log('GPT 응답:', content); // 디버깅용 로그
             parsed = JSON.parse(content);
         } catch (parseError) {
             console.error('JSON 파싱 오류:', parseError);
@@ -98,10 +96,22 @@ export const getLocationCoordinates = async (req, res) => {
 
                 const from = fromRes.data.documents[0];
                 const to = toRes.data.documents[0];
+
+                // 경로 API 호출 추가
+                const routeRes = await axios.get('https://apis-navi.kakaomobility.com/v1/directions', {
+                    params: {
+                        origin: `${from.x},${from.y}`,
+                        destination: `${to.x},${to.y}`,
+                    },
+                    headers,
+                });
+
+                // 경로 정보 포함하여 응답
                 return res.json({
                     type: 'route',
                     from: { lat: from.y, lng: from.x, place_name: from.place_name },
                     to: { lat: to.y, lng: to.x, place_name: to.place_name },
+                    path: routeRes.data.routes[0].sections[0].roads.flatMap((r) => r.vertexes),
                 });
             } catch (error) {
                 console.error('카카오 API 오류:', error);
