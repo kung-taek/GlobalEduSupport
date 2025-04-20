@@ -39,7 +39,7 @@ function App() {
         }
 
         try {
-            const res = await axios.post('http://13.124.18.66:5000/api/gpt-location', {
+            const res = await axios.post('http://13.124.18.66:5000/api/gpt-kakao/gpt-location', {
                 message: input,
             });
             if (res.data.type === 'route') {
@@ -50,7 +50,7 @@ function App() {
                 setMapError('');
             }
         } catch (err) {
-            console.error(err);
+            console.error('GPT 위치 검색 오류:', err);
             setMapError('위치를 찾을 수 없습니다. 장소나 경로를 포함하여 질문해주세요.');
         }
     };
