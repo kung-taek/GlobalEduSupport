@@ -1,31 +1,21 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import path from 'path';
-import session from 'express-session';
-import passport from './middleware/passport.js';
-import { fileURLToPath } from 'url';
+const express = require('express');
+const cors = require('cors');
+const dotenv = require('dotenv');
+const path = require('path');
+const session = require('express-session');
+const passport = require('./middleware/passport');
 
 // 라우터 불러오기
-import gptRouter from './routes/gpt.js';
-import kakaoRouter from './routes/kakao.js';
-import authRouter from './routes/auth.js';
-import gptKakaoRouter from './routes/gptKakao.js';
+const gptRouter = require('./routes/gpt');
+const kakaoRouter = require('./routes/kakao');
+const authRouter = require('./routes/auth');
+const gptKakaoRouter = require('./routes/gptKakao');
 
 // DB 연결
-import { pool } from './models/database.js';
-
-// ESM 환경에서 __dirname 설정
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const { pool } = require('./models/database');
 
 // .env 파일 로드
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
-
-// 디버깅용 환경변수 확인
-console.log('✅ OPENAI_API_KEY:', process.env.OPENAI_API_KEY);
-console.log('✅ DB_HOST:', process.env.DB_HOST);
-console.log('✅ Kakao API Key:', process.env.KAKAO_REST_API_KEY);
+dotenv.config();
 
 const app = express();
 
@@ -49,7 +39,7 @@ app.use(
             httpOnly: true,
             maxAge: 24 * 60 * 60 * 1000, // 24시간
         },
-        name: 'globalhelper.sid', // 세션 쿠키 이름 설정 (선택사항)
+        name: 'globalhelper.sid',
     })
 );
 
