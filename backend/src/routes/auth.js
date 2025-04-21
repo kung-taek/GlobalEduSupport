@@ -1,8 +1,7 @@
 import express from 'express';
-const express = require('express');
-const { register, login } = require('../controllers/authController');
-const passport = require('passport');
-const dotenv = require('dotenv');
+import { register, login } from '../controllers/authController.js';
+import passport from 'passport';
+import dotenv from 'dotenv';
 
 dotenv.config();
 const router = express.Router();
@@ -44,4 +43,4 @@ router.get('/test', (req, res) => {
     res.send('✅ 테스트 라우터 성공!');
 });
 
-module.exports = router;
+export default router;
