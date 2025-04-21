@@ -18,7 +18,6 @@ export const pool = mysql.createPool({
     waitForConnections: true,
     connectionLimit: 20,
     queueLimit: 0,
-    connectTimeout: 10000,
 });
 
 // DB HOST 확인
