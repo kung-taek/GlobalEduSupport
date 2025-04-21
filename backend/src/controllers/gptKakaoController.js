@@ -1,6 +1,7 @@
 import axios from 'axios';
 import OpenAI from 'openai';
 
+//ㅋㅋㅋ
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
