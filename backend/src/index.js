@@ -24,15 +24,22 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
 
+// CORS 허용 도메인 설정
+const allowedOrigins = ['http://globalhelper.p-e.kr', 'http://localhost:5173', 'http://localhost:3000'];
+
 // 미들웨어 설정
 app.use(
     cors({
         origin: function (origin, callback) {
-            const allowedOrigins = [process.env.FRONTEND_URL, 'http://localhost:5173'];
-            if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            // 개발 환경일 경우 localhost도 허용
+            if (
+                !origin ||
+                allowedOrigins.includes(origin) ||
+                (process.env.NODE_ENV !== 'production' && origin?.includes('localhost'))
+            ) {
                 callback(null, true);
             } else {
-                callback(new Error('Not allowed by CORS'));
+                callback(new Error('CORS 차단: ' + origin));
             }
         },
         credentials: true,
@@ -86,3 +93,6 @@ const PORT = process.env.PORT || 5000;
         console.error('❌ MySQL 연결 실패:', err.message);
     }
 })();
+
+
+//ㅋㅋㅋ
