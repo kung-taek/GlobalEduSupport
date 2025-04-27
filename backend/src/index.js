@@ -77,6 +77,10 @@ app.use('/api/ui-texts', uiTextsRouter);
 // 메인화면에 관리자용 UI 텍스트 입력 폼 노출 (GET /)
 app.get('/', (req, res) => {
     res.send(`
+
+        <h3>✅ 백엔드 서버 정상 가동!</h3>
+        <br>
+        <hr>
         <h2>UI 텍스트 등록 (관리자용)</h2>
         <form method="POST" action="/">
             <label>페이지 이름(page_name): <input name="page_name" required></label><br>
