@@ -5,15 +5,15 @@ import path from 'path';
 import session from 'express-session';
 import passport from './middleware/passport.js';
 import { fileURLToPath } from 'url';
+import { pool } from './models/database.js';
+import axios from 'axios';
 
 // 라우터 불러오기
 import gptRouter from './routes/gpt.js';
 import kakaoRouter from './routes/kakao.js';
 import authRouter from './routes/auth.js';
 import gptKakaoRouter from './routes/gptKakao.js';
-
-// DB 연결
-import { pool } from './models/database.js';
+import uiTextsRouter from './routes/uiTexts.js';
 
 // ESM 환경에서 __dirname 설정
 const __filename = fileURLToPath(import.meta.url);
@@ -46,6 +46,7 @@ app.use(
     })
 );
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // 세션 설정
 app.use(
@@ -71,6 +72,55 @@ app.use('/api/gpt', gptRouter);
 app.use('/api/kakao', kakaoRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/gpt-kakao', gptKakaoRouter);
+app.use('/api/ui-texts', uiTextsRouter);
+
+// 관리자용 UI 텍스트 입력 폼 (GET)
+app.get('/admin/ui-texts', (req, res) => {
+    res.send(`
+        <h2>UI 텍스트 등록 (관리자용)</h2>
+        <form method="POST" action="/admin/ui-texts">
+            <label>페이지 이름(page_name): <input name="page_name" required></label><br>
+            <label>엘리먼트 키(element_key): <input name="element_key" required></label><br>
+            <label>한글 원문(original_text_ko): <input name="original_text_ko" required></label><br>
+            <label>비밀번호: <input name="password" type="password" required></label><br>
+            <button type="submit">값 적용</button>
+        </form>
+    `);
+});
+
+// 관리자용 UI 텍스트 등록/수정 (POST)
+app.post('/admin/ui-texts', async (req, res) => {
+    const { page_name, element_key, original_text_ko, password } = req.body;
+    if (password !== 'globalhelper') {
+        return res.status(403).send('비밀번호가 일치하지 않습니다.');
+    }
+    try {
+        // 이미 존재하는지 확인
+        const [rows] = await pool.query('SELECT * FROM ui_texts WHERE page_name = ? AND element_key = ?', [
+            page_name,
+            element_key,
+        ]);
+        if (rows.length === 0) {
+            // 새 row 생성
+            await pool.query('INSERT INTO ui_texts (page_name, element_key, original_text_ko) VALUES (?, ?, ?)', [
+                page_name,
+                element_key,
+                original_text_ko,
+            ]);
+            res.send('새 UI 텍스트가 등록되었습니다.');
+        } else {
+            // 기존 row 수정
+            await pool.query('UPDATE ui_texts SET original_text_ko = ? WHERE page_name = ? AND element_key = ?', [
+                original_text_ko,
+                page_name,
+                element_key,
+            ]);
+            res.send('기존 UI 텍스트가 수정되었습니다.');
+        }
+    } catch (err) {
+        res.status(500).send('DB 오류: ' + err.message);
+    }
+});
 
 // 루트 테스트
 app.get('/', (req, res) => {
