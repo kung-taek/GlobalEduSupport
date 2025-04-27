@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import KakaoMap from './components/KakaoMap';
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
@@ -15,6 +15,14 @@ function App() {
     const [to, setTo] = useState('');
     const [mapError, setMapError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [lang, setLang] = useState('ko');
+    const [translations, setTranslations] = useState({});
+
+    useEffect(() => {
+        fetch(`/api/ui-texts?lang=${lang}&page=test`)
+            .then((res) => res.json())
+            .then(setTranslations);
+    }, [lang]);
 
     // GPT 응답을 분석하여 위치 검색이 필요한지 확인하는 함수
     const isLocationRequest = (text) => {
@@ -167,6 +175,13 @@ function App() {
                     </nav>
                 </header>
 
+                <select value={lang} onChange={(e) => setLang(e.target.value)}>
+                    <option value="ko">한국어</option>
+                    <option value="en">English</option>
+                    <option value="ja">日本語</option>
+                    {/* 필요시 다른 언어도 추가 */}
+                </select>
+
                 <Routes>
                     <Route path="/login" element={<Login />} />
                     <Route path="/auth/callback" element={<AuthCallback />} />
@@ -174,7 +189,7 @@ function App() {
                         path="/"
                         element={
                             <div style={{ padding: '20px' }}>
-                                <h2>GPT 메시지 보내기</h2>
+                                <h2>{translations.gptsend || '지피티야 도와줘'}</h2>
                                 <div style={{ marginBottom: '20px' }}>
                                     <textarea
                                         value={input}
@@ -194,14 +209,14 @@ function App() {
                                         }}
                                     >
                                         <button onClick={sendToGPT} disabled={isLoading}>
-                                            {isLoading ? 'GPT 응답 대기 중...' : 'GPT 답변 받기'}
+                                            {translations.gptcallback || 'GPt 요청(로컬)'}
                                         </button>
                                         <button
                                             onClick={sendToGPTLocation}
                                             title="장소나 경로 관련 질문시 지도에 표시"
                                             disabled={isLoading}
                                         >
-                                            지도에서 찾기
+                                            {translations.findmap || '지도에서 찾기(로컬)'}
                                         </button>
                                     </div>
                                 </div>

@@ -25,7 +25,12 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 const app = express();
 
 // CORS 허용 도메인 설정
-const allowedOrigins = ['http://globalhelper.p-e.kr', 'http://globalhelper.p-e.kr:5000', 'http://localhost:5173', 'http://localhost:3000'];
+const allowedOrigins = [
+    'http://globalhelper.p-e.kr',
+    'http://globalhelper.p-e.kr:5000',
+    'http://localhost:5173',
+    'http://localhost:3000',
+];
 
 // 미들웨어 설정
 app.use(
