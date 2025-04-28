@@ -12,6 +12,7 @@ export async function translateText(text, from, to) {
         }
         return null;
     } catch (err) {
+        console.error('MyMemory 번역 API 호출 실패:', err.message);
         return null;
     }
 }

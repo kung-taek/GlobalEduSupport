@@ -55,7 +55,7 @@ export const getRouteInfo = async (req, res) => {
         });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: err.message || '경로 계산 실패' });
+        res.status(500).json({ error: err.message });
     }
 };
 

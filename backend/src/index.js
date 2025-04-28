@@ -35,34 +35,32 @@ const allowedOrigins = [
 // 미들웨어 설정
 app.use(
     cors({
-        origin: function (origin, callback) {
-            if (!origin) {
-                // 서버-서버, Postman 등 허용
-                return callback(null, true);
-            }
-
-            const cleanedOrigin = origin.trim().toLowerCase();
-            const allowed = allowedOrigins.map((o) => o.trim().toLowerCase());
-
-            if (allowed.includes(cleanedOrigin)) {
-                callback(null, true);
-            } else {
-                console.error('❌ 차단된 Origin 요청:', origin);
-                // 403 응답을 명확하게 반환
-                callback(new Error('Not allowed by CORS'), false);
-            }
-        },
-        credentials: true,
+      origin: function (origin, callback) {
+        if (!origin) {
+          return callback(null, true);
+        }
+  
+        const cleanedOrigin = origin.trim().toLowerCase();
+        const allowed = allowedOrigins.map(o => o.trim().toLowerCase());
+  
+        if (allowed.includes(cleanedOrigin)) {
+          callback(null, true);
+        } else {
+          console.error('❌ 차단된 Origin 요청:', origin);
+          callback(null, false);  // ❗ 에러 객체를 넘기지 말고 false만 넘겨야 한다
+        }
+      },
+      credentials: true,
     })
-);
-
-// CORS 에러를 403으로 반환하는 미들웨어 추가
-app.use((err, req, res, next) => {
-    if (err.message && err.message.startsWith('Not allowed by CORS')) {
-        return res.status(403).json({ error: err.message });
+  );
+  
+  app.use((err, req, res, next) => {
+    if (err && err.message && err.message.startsWith('Not allowed by CORS')) {
+      return res.status(403).json({ error: 'CORS 차단됨' });
     }
     next(err);
-});
+  });
+  
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
