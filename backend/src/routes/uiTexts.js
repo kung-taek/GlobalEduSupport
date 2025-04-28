@@ -2,6 +2,7 @@ import express from 'express';
 import { pool } from '../models/database.js';
 import { translateText } from '../utils/translate.js';
 import { ensureLangColumn } from '../utils/dbUtils.js';
+import cors from 'cors';
 
 const router = express.Router();
 
