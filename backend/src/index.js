@@ -56,7 +56,7 @@ app.use(
     })
 );
 
-// CORS 에러를 403으로 반환하는 미들웨어 추가 
+// CORS 에러를 403으로 반환하는 미들웨어 추가
 app.use((err, req, res, next) => {
     if (err.message && err.message.startsWith('Not allowed by CORS')) {
         return res.status(403).json({ error: err.message });
