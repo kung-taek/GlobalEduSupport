@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import KakaoMap from './components/KakaoMap';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import Login from './pages/Login';
 import AuthCallback from './pages/AuthCallback';
 
@@ -41,11 +41,15 @@ function App() {
         setIsLoading(true);
         try {
             setReply('GPT 응답을 기다리는 중...');
-            const res = await axios.post('http://13.124.18.66:5000/api/gpt', {
-                message: input,
-            }, {
-                withCredentials: true, // ✅ 추가
-            });
+            const res = await axios.post(
+                'http://13.124.18.66:5000/api/gpt',
+                {
+                    message: input,
+                },
+                {
+                    withCredentials: true, // ✅ 추가
+                }
+            );
 
             if (res.data && res.data.reply) {
                 setReply(res.data.reply);
@@ -85,11 +89,15 @@ function App() {
 
         try {
             setMapError('');
-            const res = await axios.post('http://13.124.18.66:5000/api/gpt-kakao/gpt-location', {
-                message: input,
-            }, {
-                withCredentials: true, // ✅ 추가
-            });
+            const res = await axios.post(
+                'http://13.124.18.66:5000/api/gpt-kakao/gpt-location',
+                {
+                    message: input,
+                },
+                {
+                    withCredentials: true, // ✅ 추가
+                }
+            );
 
             if (res.data.type === 'route') {
                 console.log('경로 데이터 수신:', res.data);
@@ -116,12 +124,16 @@ function App() {
 
     const fetchRoute = async () => {
         try {
-            const response = await axios.post('http://13.124.18.66:5000/api/kakao/route', {
-                from,
-                to,
-            }, {
-                withCredentials: true, // ✅ 추가
-            });
+            const response = await axios.post(
+                'http://13.124.18.66:5000/api/kakao/route',
+                {
+                    from,
+                    to,
+                },
+                {
+                    withCredentials: true, // ✅ 추가
+                }
+            );
             setPath(response.data.path);
         } catch (error) {
             console.error('경로를 가져오는 중 오류 발생:', error);
@@ -130,11 +142,15 @@ function App() {
 
     const searchAddress = async () => {
         try {
-            const response = await axios.post('http://13.124.18.66:5000/api/kakao/search', {
-                keyword: address,
-            }, {
-                withCredentials: true, // ✅ 추가
-            });
+            const response = await axios.post(
+                'http://13.124.18.66:5000/api/kakao/search',
+                {
+                    keyword: address,
+                },
+                {
+                    withCredentials: true, // ✅ 추가
+                }
+            );
             if (response.data.location) {
                 setSubmittedAddress({
                     lat: response.data.location.y,
@@ -148,4 +164,145 @@ function App() {
     };
 
     return (
-        <R
+        <Router>
+            <div>
+                <header
+                    style={{
+                        backgroundColor: '#2c3e50',
+                        padding: '1rem',
+                        color: 'white',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '20px',
+                    }}
+                >
+                    <Link to="/" style={{ color: 'white', textDecoration: 'none' }}>
+                        <h1 style={{ margin: 0 }}>글로벌 교육 지원</h1>
+                    </Link>
+                    <nav>
+                        <Link
+                            to="/login"
+                            style={{
+                                color: 'white',
+                                textDecoration: 'none',
+                                backgroundColor: '#3498db',
+                                padding: '0.5rem 1rem',
+                                borderRadius: '4px',
+                                transition: 'background-color 0.3s',
+                            }}
+                            onMouseOver={(e) => (e.target.style.backgroundColor = '#2980b9')}
+                            onMouseOut={(e) => (e.target.style.backgroundColor = '#3498db')}
+                        >
+                            로그인
+                        </Link>
+                    </nav>
+                </header>
+
+                <select value={lang} onChange={(e) => setLang(e.target.value)}>
+                    <option value="ko">한국어</option>
+                    <option value="en">English</option>
+                    <option value="ja">日本語</option>
+                    {/* 필요시 다른 언어도 추가 */}
+                </select>
+
+                <Routes>
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/auth/callback" element={<AuthCallback />} />
+                    <Route
+                        path="/"
+                        element={
+                            <div style={{ padding: '20px' }}>
+                                <h2>{translations.gptsend || '지피티야 도와줘'}</h2>
+                                <div style={{ marginBottom: '20px' }}>
+                                    <textarea
+                                        value={input}
+                                        onChange={(e) => setInput(e.target.value)}
+                                        placeholder="GPT에게 보낼 메시지를 입력하세요"
+                                        rows={4}
+                                        cols={50}
+                                        disabled={isLoading}
+                                    />
+                                    <br />
+                                    <div
+                                        style={{
+                                            marginTop: '10px',
+                                            display: 'flex',
+                                            gap: '10px',
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        <button onClick={sendToGPT} disabled={isLoading}>
+                                            {translations.gptcallback || 'GPt 요청(로컬)'}
+                                        </button>
+                                        <button
+                                            onClick={sendToGPTLocation}
+                                            title="장소나 경로 관련 질문시 지도에 표시"
+                                            disabled={isLoading}
+                                        >
+                                            {translations.findmap || '지도에서 찾기(로컬)'}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <h3>GPT 응답:</h3>
+                                <pre
+                                    style={{
+                                        padding: '10px',
+                                        backgroundColor: '#f5f5f5',
+                                        borderRadius: '5px',
+                                        whiteSpace: 'pre-wrap',
+                                        color: isLoading ? '#666' : '#000',
+                                    }}
+                                >
+                                    {reply}
+                                </pre>
+
+                                {mapError && (
+                                    <div style={{ color: 'red', marginTop: '10px', marginBottom: '10px' }}>
+                                        {mapError}
+                                    </div>
+                                )}
+
+                                <hr />
+
+                                <h2>주소 입력 후 지도 이동</h2>
+                                <input
+                                    type="text"
+                                    value={address}
+                                    onChange={(e) => setAddress(e.target.value)}
+                                    placeholder="예: 경일대학교"
+                                    style={{ width: '300px', marginRight: '10px' }}
+                                />
+                                <button onClick={searchAddress}>지도 이동</button>
+                                <KakaoMap address={submittedAddress} />
+
+                                <h2>경로 표시</h2>
+                                <input
+                                    type="text"
+                                    value={from}
+                                    onChange={(e) => setFrom(e.target.value)}
+                                    placeholder="출발지"
+                                    style={{ width: '300px', marginRight: '10px' }}
+                                />
+                                <input
+                                    type="text"
+                                    value={to}
+                                    onChange={(e) => setTo(e.target.value)}
+                                    placeholder="도착지"
+                                    style={{ width: '300px', marginRight: '10px' }}
+                                />
+                                <button onClick={fetchRoute}>경로 가져오기</button>
+                                <KakaoMap path={path} />
+
+                                <KakaoMap path={path} address={submittedAddress} />
+                            </div>
+                        }
+                    />
+                </Routes>
+            </div>
+        </Router>
+    );
+}
+
+export default App;
