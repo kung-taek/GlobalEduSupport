@@ -36,9 +36,14 @@ const allowedOrigins = [
 app.use(
     cors({
         origin: function (origin, callback) {
-            if (!origin || allowedOrigins.includes(origin)) {
+            if (!origin) {
+                // 서버-서버 통신 (postman, curl 등) 허용
+                return callback(null, true);
+            }
+            if (allowedOrigins.includes(origin)) {
                 callback(null, true);
             } else {
+                console.error('❌ 차단된 Origin 요청:', origin);
                 callback(new Error('CORS 차단: ' + origin));
             }
         },
