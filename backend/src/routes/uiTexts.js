@@ -6,6 +6,14 @@ import cors from 'cors';
 
 const router = express.Router();
 
+const allowedOrigins = [
+    'http://globalhelper.p-e.kr',
+    'http://globalhelper.p-e.kr:5000',
+    'https://globalhelper.p-e.kr',
+    'http://localhost:5173',
+    'http://localhost:3000',
+];
+
 router.get('/', async (req, res) => {
     const { lang = 'ko', page } = req.query;
     if (!page) return res.status(400).json({ error: 'page 쿼리 필요' });
