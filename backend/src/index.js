@@ -37,7 +37,7 @@ app.use(
     cors({
         origin: function (origin, callback) {
             if (!origin) {
-                // 서버-서버 통신 허용
+                // 서버-서버 통신, Postman 등 허용
                 return callback(null, true);
             }
             if (allowedOrigins.includes(origin)) {
