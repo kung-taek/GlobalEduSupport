@@ -35,7 +35,6 @@ router.get('/', async (req, res) => {
         for (const row of rows) {
             let text = row[langCol];
             if (!text && lang !== 'ko') {
-                // 번역 시도
                 const translated = await translateText(row.original_text_ko, 'ko', lang);
                 if (translated) {
                     await pool.query(`UPDATE ui_texts SET ${langCol} = ? WHERE page_name = ? AND element_key = ?`, [
@@ -45,9 +44,11 @@ router.get('/', async (req, res) => {
                     ]);
                     text = translated;
                 } else {
-                    text = row.original_text_ko; // fallback
+                    console.warn(`⚠️ 번역 실패: ${row.original_text_ko} (${lang})`);
+                    text = row.original_text_ko; // fallback 무조건 원본 사용
                 }
             }
+
             translations[row.element_key] = text || row.original_text_ko;
         }
         res.json(translations);
