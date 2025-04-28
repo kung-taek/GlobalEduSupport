@@ -36,12 +36,7 @@ const allowedOrigins = [
 app.use(
     cors({
         origin: function (origin, callback) {
-            // 개발 환경일 경우 localhost도 허용
-            if (
-                !origin ||
-                allowedOrigins.includes(origin) ||
-                (process.env.NODE_ENV !== 'production' && origin?.includes('localhost'))
-            ) {
+            if (!origin || allowedOrigins.includes(origin)) {
                 callback(null, true);
             } else {
                 callback(new Error('CORS 차단: ' + origin));
