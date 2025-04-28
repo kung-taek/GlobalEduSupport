@@ -37,7 +37,7 @@ app.use(
     cors({
         origin: function (origin, callback) {
             if (!origin) {
-                // 서버-서버 통신 허용
+                // 서버-서버, Postman 등 허용
                 return callback(null, true);
             }
 
@@ -48,12 +48,22 @@ app.use(
                 callback(null, true);
             } else {
                 console.error('❌ 차단된 Origin 요청:', origin);
-                callback(new Error('CORS 차단: ' + origin));
+                // 403 응답을 명확하게 반환
+                callback(new Error('Not allowed by CORS'), false);
             }
         },
         credentials: true,
     })
 );
+
+// CORS 에러를 403으로 반환하는 미들웨어 추가 
+app.use((err, req, res, next) => {
+    if (err.message && err.message.startsWith('Not allowed by CORS')) {
+        return res.status(403).json({ error: err.message });
+    }
+    next(err);
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
