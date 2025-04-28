@@ -37,10 +37,14 @@ app.use(
     cors({
         origin: function (origin, callback) {
             if (!origin) {
-                // 서버-서버 통신, Postman 등 허용
+                // 서버-서버 통신 허용
                 return callback(null, true);
             }
-            if (allowedOrigins.includes(origin)) {
+
+            const cleanedOrigin = origin.trim().toLowerCase();
+            const allowed = allowedOrigins.map((o) => o.trim().toLowerCase());
+
+            if (allowed.includes(cleanedOrigin)) {
                 callback(null, true);
             } else {
                 console.error('❌ 차단된 Origin 요청:', origin);
