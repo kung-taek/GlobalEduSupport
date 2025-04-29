@@ -93,30 +93,89 @@ app.use('/api/gpt-kakao', gptKakaoRouter);
 app.use('/api/ui-texts', uiTextsRouter);
 
 // 메인화면에 관리자용 UI 텍스트 입력 폼 노출 (GET /)
-app.get('/', (req, res) => {
-    res.send(`
-        <h3>✅ 백엔드 서버 정상 가동!</h3>
-        <br>
-        <hr>
-        <h2>UI 텍스트 등록 (관리자용)</h2>
-        <form method="POST" action="/">
-            <label>페이지 이름(page_name): <input name="page_name" required></label><br>
-            <label>엘리먼트 키(element_key): <input name="element_key" required></label><br>
-            <label>한글 원문(original_text_ko): <input name="original_text_ko" required></label><br>
-            <label>비밀번호: <input name="password" type="password" required></label><br>
-            <button type="submit">값 적용</button>
-        </form>
+app.get('/', async (req, res) => {
+    try {
+        // 모든 컬럼 정보 가져오기
+        const [columns] = await pool.query(
+            `
+            SELECT COLUMN_NAME 
+            FROM INFORMATION_SCHEMA.COLUMNS 
+            WHERE TABLE_NAME = 'ui_texts' 
+            AND TABLE_SCHEMA = ?
+        `,
+            [process.env.DB_NAME || 'AWS_DB']
+        );
 
-        <hr>
-        <h2>UI 텍스트 수정 (관리자용)</h2>
-        <form method="POST" action="/update">
-            <label>페이지 이름(page_name): <input name="page_name" required></label><br>
-            <label>엘리먼트 키(element_key): <input name="element_key" required></label><br>
-            <label>새로운 한글 원문(new_text_ko): <input name="new_text_ko" required></label><br>
-            <label>비밀번호: <input name="password" type="password" required></label><br>
-            <button type="submit">텍스트 수정</button>
-        </form>
-    `);
+        // 모든 데이터 가져오기
+        const [rows] = await pool.query('SELECT * FROM ui_texts');
+
+        // HTML 테이블 생성
+        const columnNames = columns.map((col) => col.COLUMN_NAME);
+        const tableHeaders = columnNames.map((name) => `<th>${name}</th>`).join('');
+        const tableRows = rows
+            .map((row) => {
+                return `<tr>${columnNames.map((col) => `<td>${row[col] || ''}</td>`).join('')}</tr>`;
+            })
+            .join('');
+
+        res.send(`
+            <h3>✅ 백엔드 서버 정상 가동!</h3>
+            <br>
+            <hr>
+            <h2>UI 텍스트 등록 (관리자용)</h2>
+            <form method="POST" action="/">
+                <label>페이지 이름(page_name): <input name="page_name" required></label><br>
+                <label>엘리먼트 키(element_key): <input name="element_key" required></label><br>
+                <label>한글 원문(original_text_ko): <input name="original_text_ko" required></label><br>
+                <label>비밀번호: <input name="password" type="password" required></label><br>
+                <button type="submit">값 적용</button>
+            </form>
+
+            <hr>
+            <h2>UI 텍스트 수정 (관리자용)</h2>
+            <form method="POST" action="/update">
+                <label>페이지 이름(page_name): <input name="page_name" required></label><br>
+                <label>엘리먼트 키(element_key): <input name="element_key" required></label><br>
+                <label>새로운 한글 원문(new_text_ko): <input name="new_text_ko" required></label><br>
+                <label>비밀번호: <input name="password" type="password" required></label><br>
+                <button type="submit">텍스트 수정</button>
+            </form>
+
+            <hr>
+            <h2>데이터베이스 현재 상태</h2>
+            <style>
+                table {
+                    border-collapse: collapse;
+                    width: 100%;
+                    margin-top: 20px;
+                }
+                th, td {
+                    border: 1px solid #ddd;
+                    padding: 8px;
+                    text-align: left;
+                }
+                th {
+                    background-color: #f2f2f2;
+                }
+                tr:nth-child(even) {
+                    background-color: #f9f9f9;
+                }
+                tr:hover {
+                    background-color: #f5f5f5;
+                }
+            </style>
+            <table>
+                <thead>
+                    <tr>${tableHeaders}</tr>
+                </thead>
+                <tbody>
+                    ${tableRows}
+                </tbody>
+            </table>
+        `);
+    } catch (err) {
+        res.status(500).send('데이터베이스 조회 중 오류 발생: ' + err.message);
+    }
 });
 
 // 메인화면에서 입력된 값 처리 (POST /)
