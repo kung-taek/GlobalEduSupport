@@ -114,8 +114,9 @@ app.get('/', async (req, res) => {
         const tableHeaders = columnNames.map((name) => `<th>${name}</th>`).join('');
 
         res.send(`
-            <h3>✅ 백엔드 서버 정상 가동!</h3>
-            
+            <div id="backstart">
+                <h3>✅ 백엔드 서버 정상 가동!</h3>
+            </div>
             <div id="auth-section">
                 <input type="password" id="auth-password" placeholder="관리자 암호를 입력하세요">
                 <button onclick="authenticate()">확인</button>
@@ -124,25 +125,100 @@ app.get('/', async (req, res) => {
             <div id="admin-content" style="display: none;">
                 <hr>
                 <h2>UI 텍스트 등록 (관리자용)</h2>
-                <form id="addForm" onsubmit="handleSubmit(event, 'add')">
-                    <label>페이지 이름(page_name): <input name="page_name" required></label><br>
-                    <label>엘리먼트 키(element_key): <input name="element_key" required></label><br>
-                    <label>한글 원문(original_text_ko): <input name="original_text_ko" required></label><br>
+                <form id="addForm" onsubmit="handleSubmit(event, 'add')" class="admin-form">
+                    <div class="form-group">
+                        <label>페이지 이름(page_name):</label>
+                        <input name="page_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>엘리먼트 키(element_key):</label>
+                        <input name="element_key" required>
+                    </div>
+                    <div class="form-group">
+                        <label>한글 원문(original_text_ko):</label>
+                        <input name="original_text_ko" required>
+                    </div>
                     <button type="submit">값 적용</button>
                 </form>
 
                 <hr>
                 <h2>UI 텍스트 수정 (관리자용)</h2>
-                <form id="updateForm" onsubmit="handleSubmit(event, 'update')">
-                    <label>페이지 이름(page_name): <input name="page_name" required></label><br>
-                    <label>엘리먼트 키(element_key): <input name="element_key" required></label><br>
-                    <label>새로운 한글 원문(new_text_ko): <input name="new_text_ko" required></label><br>
+                <form id="updateForm" onsubmit="handleSubmit(event, 'update')" class="admin-form">
+                    <div class="form-group">
+                        <label>페이지 이름(page_name):</label>
+                        <input name="page_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>엘리먼트 키(element_key):</label>
+                        <input name="element_key" required>
+                    </div>
+                    <div class="form-group">
+                        <label>새로운 한글 원문(new_text_ko):</label>
+                        <input name="new_text_ko" required>
+                    </div>
                     <button type="submit">텍스트 수정</button>
                 </form>
 
                 <hr>
-                <h2>데이터베이스 현재 상태</h2>
+                <h2>데이터베이스</h2>
                 <style>
+                    /* 기존 스타일 유지 */
+                    #backstart {
+                        margin: 20px 0;
+                        padding: 20px;
+                        text-align: center;
+                    }
+                    #auth-section {
+                        margin: 20px 0;
+                        padding: 20px;
+                        text-align: center;
+                    }
+                    #auth-password {
+                        padding: 5px;
+                        margin-right: 10px;
+                    }
+
+                    /* 폼 스타일 추가 */
+                    .admin-form {
+                        max-width: 800px;
+                        margin: 20px 0;
+                    }
+
+                    .form-group {
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 10px;
+                    }
+
+                    .form-group label {
+                        width: 200px;
+                        text-align: right;
+                        padding-right: 15px;
+                        flex-shrink: 0;
+                    }
+
+                    .form-group input {
+                        width: 400px;
+                        padding: 5px;
+                        border: 1px solid #ddd;
+                        border-radius: 4px;
+                    }
+
+                    .admin-form button {
+                        margin-left: 200px;
+                        padding: 8px 15px;
+                        background-color: #4CAF50;
+                        color: white;
+                        border: none;
+                        border-radius: 4px;
+                        cursor: pointer;
+                    }
+
+                    .admin-form button:hover {
+                        background-color: #45a049;
+                    }
+
+                    /* 기존 테이블 스타일 유지 */
                     table {
                         border-collapse: collapse;
                         width: 100%;
@@ -200,6 +276,11 @@ app.get('/', async (req, res) => {
 
             <style>
                 /* 기존 스타일 유지 */
+                #back {
+                    margin: 20px 0;
+                    padding: 20px;
+                    text-align: center;
+                }
                 #auth-section {
                     margin: 20px 0;
                     padding: 20px;
