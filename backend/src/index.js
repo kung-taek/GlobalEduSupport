@@ -159,10 +159,38 @@ app.get('/', async (req, res) => {
                 </form>
 
                 <hr>
-                <h2>ui_texts 데이터베이스</h2>
+                <h2>데이터베이스 현재 상태</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            ${tableHeaders}
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows.map(row => `
+                            <tr>
+                                ${columnNames.map(col => {
+                                    if (col === 'original_text_ko') {
+                                        return `
+                                            <td>
+                                                <div class="editable-cell" 
+                                                     onclick="makeEditable(this, '${row.page_name}', '${row.element_key}')"
+                                                     data-original="${row[col] || ''}">${row[col] || ''}</div>
+                                            </td>`;
+                                    }
+                                    return `<td>${row[col] || ''}</td>`;
+                                }).join('')}
+                                <td>
+                                    <button onclick="handleDelete('${row.page_name}', '${row.element_key}')" 
+                                            class="delete-btn">❌</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+
                 <style>
-                
-                
                     #auth-section {
                         margin: 20px 0;
                         padding: 20px;
@@ -243,32 +271,62 @@ app.get('/', async (req, res) => {
                     .delete-btn:hover {
                         background-color: #ffebeb;
                     }
+                    
+                    .editable-cell {
+                        min-height: 20px;
+                        padding: 5px;
+                        cursor: pointer;
+                        position: relative;
+                    }
+
+                    .editable-cell:hover {
+                        background-color: #f0f0f0;
+                    }
+
+                    .editable-cell.editing {
+                        padding: 0;
+                    }
+
+                    .editable-cell input {
+                        width: 100%;
+                        padding: 5px;
+                        box-sizing: border-box;
+                        border: 2px solid #4CAF50;
+                        border-radius: 4px;
+                    }
+
+                    .edit-controls {
+                        position: absolute;
+                        right: 0;
+                        top: 100%;
+                        background: white;
+                        border: 1px solid #ddd;
+                        border-radius: 4px;
+                        padding: 5px;
+                        z-index: 100;
+                        display: flex;
+                        gap: 5px;
+                    }
+
+                    .edit-controls button {
+                        padding: 3px 8px;
+                        cursor: pointer;
+                        border: none;
+                        border-radius: 3px;
+                    }
+
+                    .save-btn {
+                        background-color: #4CAF50;
+                        color: white;
+                    }
+
+                    .cancel-btn {
+                        background-color: #f44336;
+                        color: white;
+                    }
                 </style>
                 <p>   page_name : 사용될 페이지 이름</p>
                 <p> element_key : 변수 이름</p>
-                <table>
-                    <thead>
-                        <tr>
-                            ${tableHeaders}
-                            <th>작업</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${rows
-                            .map(
-                                (row) => `
-                            <tr>
-                                ${columnNames.map((col) => `<td>${row[col] || ''}</td>`).join('')}
-                                <td>
-                                    <button onclick="handleDelete('${row.page_name}', '${row.element_key}')" 
-                                            class="delete-btn">❌</button>
-                                </td>
-                            </tr>
-                        `
-                            )
-                            .join('')}
-                    </tbody>
-                </table>
             </div>
 
             <style>
@@ -363,6 +421,81 @@ app.get('/', async (req, res) => {
                     } catch (error) {
                         alert('오류가 발생했습니다: ' + error.message);
                     }
+                }
+
+                function makeEditable(element, pageName, elementKey) {
+                    if (element.classList.contains('editing')) return;
+                    
+                    const originalText = element.textContent;
+                    element.classList.add('editing');
+                    
+                    const input = document.createElement('input');
+                    input.value = originalText;
+                    input.setAttribute('data-original', originalText);
+                    
+                    const controls = document.createElement('div');
+                    controls.className = 'edit-controls';
+                    controls.innerHTML = `
+                        <button class="save-btn" onclick="saveEdit(this, '${pageName}', '${elementKey}')">저장</button>
+                        <button class="cancel-btn" onclick="cancelEdit(this)">취소</button>
+                    `;
+                    
+                    element.textContent = '';
+                    element.appendChild(input);
+                    element.appendChild(controls);
+                    input.focus();
+
+                    // Enter 키로 저장, Esc 키로 취소
+                    input.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            saveEdit(controls.querySelector('.save-btn'), pageName, elementKey);
+                        } else if (e.key === 'Escape') {
+                            cancelEdit(controls.querySelector('.cancel-btn'));
+                        }
+                    });
+                }
+
+                async function saveEdit(button, pageName, elementKey) {
+                    const cell = button.closest('.editable-cell');
+                    const input = cell.querySelector('input');
+                    const newText = input.value.trim();
+                    
+                    if (newText === '') {
+                        alert('내용을 입력해주세요.');
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/update', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                page_name: pageName,
+                                element_key: elementKey,
+                                new_text_ko: newText
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            window.location.reload();
+                        } else {
+                            const errorData = await response.json();
+                            alert(errorData.error || '수정 중 오류가 발생했습니다.');
+                            cancelEdit(button);
+                        }
+                    } catch (error) {
+                        alert('오류가 발생했습니다: ' + error.message);
+                        cancelEdit(button);
+                    }
+                }
+
+                function cancelEdit(button) {
+                    const cell = button.closest('.editable-cell');
+                    const originalText = cell.querySelector('input').getAttribute('data-original');
+                    cell.classList.remove('editing');
+                    cell.textContent = originalText;
                 }
             </script>
         `);
