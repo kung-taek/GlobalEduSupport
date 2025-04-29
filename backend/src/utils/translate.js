@@ -1,7 +1,4 @@
 import axios from 'axios';
-
-import axios from 'axios';
-
 export async function translateText(text, from, to) {
     try {
         const apiKey = process.env.MYMEMORY_API_KEY;

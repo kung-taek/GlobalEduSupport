@@ -201,5 +201,3 @@ const PORT = process.env.PORT || 5000;
         console.error('❌ MySQL 연결 실패:', err.message);
     }
 })();
-
-//ㅋㅋㅋ
