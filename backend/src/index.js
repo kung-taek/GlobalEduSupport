@@ -123,9 +123,7 @@ app.get('/', async (req, res) => {
             </div>
 
             <div id="admin-content" style="display: none;">
-                
-                <hr>
-                <h2>UI 텍스트 등록</h2>
+                <h2>원문문 등록</h2>
                 <form id="addForm" onsubmit="handleSubmit(event, 'add')" class="admin-form">
                     <div class="form-group">
                         <label>페이지 이름(page_name):</label>
@@ -143,7 +141,7 @@ app.get('/', async (req, res) => {
                 </form>
 
                 <hr>
-                <h2>UI 텍스트 수정</h2>
+                <h2>원문 수정</h2>
                 <form id="updateForm" onsubmit="handleSubmit(event, 'update')" class="admin-form">
                     <div class="form-group">
                         <label>페이지 이름(page_name):</label>
@@ -163,6 +161,8 @@ app.get('/', async (req, res) => {
                 <hr>
                 <h2>ui_texts 데이터베이스</h2>
                 <style>
+                
+                
                     #auth-section {
                         margin: 20px 0;
                         padding: 20px;
