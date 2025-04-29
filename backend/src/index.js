@@ -1,5 +1,5 @@
 import express from 'express';
-import cors from 'cors';
+const cors = require('cors');
 import dotenv from 'dotenv';
 import path from 'path';
 import session from 'express-session';
@@ -35,32 +35,31 @@ const allowedOrigins = [
 // 미들웨어 설정
 app.use(
     cors({
-      origin: function (origin, callback) {
-        if (!origin) {
-          return callback(null, true);
-        }
-  
-        const cleanedOrigin = origin.trim().toLowerCase();
-        const allowed = allowedOrigins.map(o => o.trim().toLowerCase());
-  
-        if (allowed.includes(cleanedOrigin)) {
-          callback(null, true);
-        } else {
-          console.error('❌ 차단된 Origin 요청:', origin);
-          callback(null, false);  // ❗ 에러 객체를 넘기지 말고 false만 넘겨야 한다
-        }
-      },
-      credentials: true,
+        origin: function (origin, callback) {
+            if (!origin) {
+                return callback(null, true);
+            }
+
+            const cleanedOrigin = origin.trim().toLowerCase();
+            const allowed = allowedOrigins.map((o) => o.trim().toLowerCase());
+
+            if (allowed.includes(cleanedOrigin)) {
+                callback(null, true);
+            } else {
+                console.error('❌ 차단된 Origin 요청:', origin);
+                callback(null, false); // ❗ 에러 객체를 넘기지 말고 false만 넘겨야 한다
+            }
+        },
+        credentials: true,
     })
-  );
-  
-  app.use((err, req, res, next) => {
+);
+
+app.use((err, req, res, next) => {
     if (err && err.message && err.message.startsWith('Not allowed by CORS')) {
-      return res.status(403).json({ error: 'CORS 차단됨' });
+        return res.status(403).json({ error: 'CORS 차단됨' });
     }
     next(err);
-  });
-  
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
