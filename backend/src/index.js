@@ -123,7 +123,7 @@ app.get('/', async (req, res) => {
             </div>
 
             <div id="admin-content" style="display: none;">
-                <h2>원문문 등록</h2>
+                <h2>원문 등록</h2>
                 <form id="addForm" onsubmit="handleSubmit(event, 'add')" class="admin-form">
                     <div class="form-group">
                         <label>페이지 이름(page_name):</label>

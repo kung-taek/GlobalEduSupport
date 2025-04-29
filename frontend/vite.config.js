@@ -5,7 +5,10 @@ export default defineConfig({
     plugins: [react()],
     server: {
         proxy: {
-            '/api': 'http://localhost:5000', // 백엔드 서버 주소
+            '/api': {
+                target: 'http://13.124.18.66:5000',
+                changeOrigin: true,
+            },
         },
     },
 });
