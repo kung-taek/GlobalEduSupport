@@ -112,22 +112,6 @@ app.get('/', async (req, res) => {
         // HTML 테이블 생성
         const columnNames = columns.map((col) => col.COLUMN_NAME);
         const tableHeaders = columnNames.map((name) => `<th>${name}</th>`).join('');
-        const tableRows = rows
-            .map((row) => {
-                const deleteButton = `
-                <form method="POST" action="/delete" style="display: inline;">
-                    <input type="hidden" name="page_name" value="${row.page_name}">
-                    <input type="hidden" name="element_key" value="${row.element_key}">
-                    <input type="password" name="password" placeholder="비밀번호" required style="width: 80px;">
-                    <button type="submit" style="color: red; cursor: pointer;">❌</button>
-                </form>
-            `;
-                return `<tr>
-                ${columnNames.map((col) => `<td>${row[col] || ''}</td>`).join('')}
-                <td>${deleteButton}</td>
-            </tr>`;
-            })
-            .join('');
 
         res.send(`
             <h3>✅ 백엔드 서버 정상 가동!</h3>
@@ -183,15 +167,10 @@ app.get('/', async (req, res) => {
                         border: none;
                         color: red;
                         cursor: pointer;
+                        padding: 5px 10px;
                     }
-                    .delete-form {
-                        display: flex;
-                        align-items: center;
-                        gap: 5px;
-                    }
-                    .password-input {
-                        width: 80px;
-                        padding: 2px 5px;
+                    .delete-btn:hover {
+                        background-color: #ffebeb;
                     }
                 </style>
                 <table>
@@ -202,7 +181,19 @@ app.get('/', async (req, res) => {
                         </tr>
                     </thead>
                     <tbody>
-                        ${tableRows}
+                        ${rows
+                            .map(
+                                (row) => `
+                            <tr>
+                                ${columnNames.map((col) => `<td>${row[col] || ''}</td>`).join('')}
+                                <td>
+                                    <button onclick="handleDelete('${row.page_name}', '${row.element_key}')" 
+                                            class="delete-btn">❌</button>
+                                </td>
+                            </tr>
+                        `
+                            )
+                            .join('')}
                     </tbody>
                 </table>
             </div>
@@ -221,14 +212,27 @@ app.get('/', async (req, res) => {
             </style>
 
             <script>
+                // 페이지 로드 시 인증 상태 확인
+                document.addEventListener('DOMContentLoaded', function() {
+                    const isAuthenticated = localStorage.getItem('isAuthenticated');
+                    if (isAuthenticated === 'true') {
+                        showAdminContent();
+                    }
+                });
+
                 function authenticate() {
                     const password = document.getElementById('auth-password').value;
                     if (password === 'globalhelper') {
-                        document.getElementById('admin-content').style.display = 'block';
-                        document.getElementById('auth-section').style.display = 'none';
+                        localStorage.setItem('isAuthenticated', 'true');
+                        showAdminContent();
                     } else {
                         alert('잘못된 암호입니다.');
                     }
+                }
+
+                function showAdminContent() {
+                    document.getElementById('admin-content').style.display = 'block';
+                    document.getElementById('auth-section').style.display = 'none';
                 }
 
                 async function handleSubmit(event, type) {
@@ -249,7 +253,8 @@ app.get('/', async (req, res) => {
                         if (response.ok) {
                             window.location.reload();
                         } else {
-                            alert('오류가 발생했습니다.');
+                            const errorData = await response.json();
+                            alert(errorData.error || '오류가 발생했습니다.');
                         }
                     } catch (error) {
                         alert('오류가 발생했습니다: ' + error.message);
@@ -274,7 +279,8 @@ app.get('/', async (req, res) => {
                         if (response.ok) {
                             window.location.reload();
                         } else {
-                            alert('삭제 중 오류가 발생했습니다.');
+                            const errorData = await response.json();
+                            alert(errorData.error || '삭제 중 오류가 발생했습니다.');
                         }
                     } catch (error) {
                         alert('오류가 발생했습니다: ' + error.message);
