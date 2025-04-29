@@ -114,17 +114,18 @@ app.get('/', async (req, res) => {
         const tableHeaders = columnNames.map((name) => `<th>${name}</th>`).join('');
 
         res.send(`
-            <div id="backstart">
-                <h3>✅ 백엔드 서버 정상 가동!</h3>
-            </div>
+            
             <div id="auth-section">
+                <h3>✅ 백엔드 서버 정상 가동!</h3>
+                <br>
                 <input type="password" id="auth-password" placeholder="관리자 암호를 입력하세요">
                 <button onclick="authenticate()">확인</button>
             </div>
 
             <div id="admin-content" style="display: none;">
+                
                 <hr>
-                <h2>UI 텍스트 등록 (관리자용)</h2>
+                <h2>UI 텍스트 등록</h2>
                 <form id="addForm" onsubmit="handleSubmit(event, 'add')" class="admin-form">
                     <div class="form-group">
                         <label>페이지 이름(page_name):</label>
@@ -142,7 +143,7 @@ app.get('/', async (req, res) => {
                 </form>
 
                 <hr>
-                <h2>UI 텍스트 수정 (관리자용)</h2>
+                <h2>UI 텍스트 수정</h2>
                 <form id="updateForm" onsubmit="handleSubmit(event, 'update')" class="admin-form">
                     <div class="form-group">
                         <label>페이지 이름(page_name):</label>
@@ -160,14 +161,8 @@ app.get('/', async (req, res) => {
                 </form>
 
                 <hr>
-                <h2>데이터베이스</h2>
+                <h2>ui_texts 데이터베이스</h2>
                 <style>
-                    /* 기존 스타일 유지 */
-                    #backstart {
-                        margin: 20px 0;
-                        padding: 20px;
-                        text-align: center;
-                    }
                     #auth-section {
                         margin: 20px 0;
                         padding: 20px;
