@@ -131,112 +131,181 @@ app.get('/', async (req, res) => {
 
         res.send(`
             <h3>✅ 백엔드 서버 정상 가동!</h3>
-            <br>
-            <hr>
-            <h2>UI 텍스트 등록 (관리자용)</h2>
-            <form method="POST" action="/">
-                <label>페이지 이름(page_name): <input name="page_name" required></label><br>
-                <label>엘리먼트 키(element_key): <input name="element_key" required></label><br>
-                <label>한글 원문(original_text_ko): <input name="original_text_ko" required></label><br>
-                <label>비밀번호: <input name="password" type="password" required></label><br>
-                <button type="submit">값 적용</button>
-            </form>
+            
+            <div id="auth-section">
+                <input type="password" id="auth-password" placeholder="관리자 암호를 입력하세요">
+                <button onclick="authenticate()">확인</button>
+            </div>
 
-            <hr>
-            <h2>UI 텍스트 수정 (관리자용)</h2>
-            <form method="POST" action="/update">
-                <label>페이지 이름(page_name): <input name="page_name" required></label><br>
-                <label>엘리먼트 키(element_key): <input name="element_key" required></label><br>
-                <label>새로운 한글 원문(new_text_ko): <input name="new_text_ko" required></label><br>
-                <label>비밀번호: <input name="password" type="password" required></label><br>
-                <button type="submit">텍스트 수정</button>
-            </form>
+            <div id="admin-content" style="display: none;">
+                <hr>
+                <h2>UI 텍스트 등록 (관리자용)</h2>
+                <form id="addForm" onsubmit="handleSubmit(event, 'add')">
+                    <label>페이지 이름(page_name): <input name="page_name" required></label><br>
+                    <label>엘리먼트 키(element_key): <input name="element_key" required></label><br>
+                    <label>한글 원문(original_text_ko): <input name="original_text_ko" required></label><br>
+                    <button type="submit">값 적용</button>
+                </form>
 
-            <hr>
-            <h2>데이터베이스 현재 상태</h2>
+                <hr>
+                <h2>UI 텍스트 수정 (관리자용)</h2>
+                <form id="updateForm" onsubmit="handleSubmit(event, 'update')">
+                    <label>페이지 이름(page_name): <input name="page_name" required></label><br>
+                    <label>엘리먼트 키(element_key): <input name="element_key" required></label><br>
+                    <label>새로운 한글 원문(new_text_ko): <input name="new_text_ko" required></label><br>
+                    <button type="submit">텍스트 수정</button>
+                </form>
+
+                <hr>
+                <h2>데이터베이스 현재 상태</h2>
+                <style>
+                    table {
+                        border-collapse: collapse;
+                        width: 100%;
+                        margin-top: 20px;
+                    }
+                    th, td {
+                        border: 1px solid #ddd;
+                        padding: 8px;
+                        text-align: left;
+                    }
+                    th {
+                        background-color: #f2f2f2;
+                    }
+                    tr:nth-child(even) {
+                        background-color: #f9f9f9;
+                    }
+                    tr:hover {
+                        background-color: #f5f5f5;
+                    }
+                    .delete-btn {
+                        background: none;
+                        border: none;
+                        color: red;
+                        cursor: pointer;
+                    }
+                    .delete-form {
+                        display: flex;
+                        align-items: center;
+                        gap: 5px;
+                    }
+                    .password-input {
+                        width: 80px;
+                        padding: 2px 5px;
+                    }
+                </style>
+                <table>
+                    <thead>
+                        <tr>
+                            ${tableHeaders}
+                            <th>작업</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableRows}
+                    </tbody>
+                </table>
+            </div>
+
             <style>
-                table {
-                    border-collapse: collapse;
-                    width: 100%;
-                    margin-top: 20px;
+                /* 기존 스타일 유지 */
+                #auth-section {
+                    margin: 20px 0;
+                    padding: 20px;
+                    text-align: center;
                 }
-                th, td {
-                    border: 1px solid #ddd;
-                    padding: 8px;
-                    text-align: left;
-                }
-                th {
-                    background-color: #f2f2f2;
-                }
-                tr:nth-child(even) {
-                    background-color: #f9f9f9;
-                }
-                tr:hover {
-                    background-color: #f5f5f5;
-                }
-                .delete-btn {
-                    background: none;
-                    border: none;
-                    color: red;
-                    cursor: pointer;
-                }
-                .delete-form {
-                    display: flex;
-                    align-items: center;
-                    gap: 5px;
-                }
-                .password-input {
-                    width: 80px;
-                    padding: 2px 5px;
+                #auth-password {
+                    padding: 5px;
+                    margin-right: 10px;
                 }
             </style>
-            <table>
-                <thead>
-                    <tr>
-                        ${tableHeaders}
-                        <th>작업</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${tableRows}
-                </tbody>
-            </table>
+
+            <script>
+                function authenticate() {
+                    const password = document.getElementById('auth-password').value;
+                    if (password === 'globalhelper') {
+                        document.getElementById('admin-content').style.display = 'block';
+                        document.getElementById('auth-section').style.display = 'none';
+                    } else {
+                        alert('잘못된 암호입니다.');
+                    }
+                }
+
+                async function handleSubmit(event, type) {
+                    event.preventDefault();
+                    const form = event.target;
+                    const formData = new FormData(form);
+                    const data = Object.fromEntries(formData.entries());
+                    
+                    try {
+                        const response = await fetch(type === 'add' ? '/' : '/update', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(data)
+                        });
+                        
+                        if (response.ok) {
+                            window.location.reload();
+                        } else {
+                            alert('오류가 발생했습니다.');
+                        }
+                    } catch (error) {
+                        alert('오류가 발생했습니다: ' + error.message);
+                    }
+                }
+
+                async function handleDelete(pageName, elementKey) {
+                    if (!confirm('정말 삭제하시겠습니까?')) return;
+                    
+                    try {
+                        const response = await fetch('/delete', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                page_name: pageName,
+                                element_key: elementKey
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            window.location.reload();
+                        } else {
+                            alert('삭제 중 오류가 발생했습니다.');
+                        }
+                    } catch (error) {
+                        alert('오류가 발생했습니다: ' + error.message);
+                    }
+                }
+            </script>
         `);
     } catch (err) {
         res.status(500).send('데이터베이스 조회 중 오류 발생: ' + err.message);
     }
 });
 
-// 메인화면에서 입력된 값 처리 (POST /)
+// POST 엔드포인트들 수정 (비밀번호 체크 제거)
 app.post('/', async (req, res) => {
-    const { page_name, element_key, original_text_ko, password } = req.body;
-    if (password !== 'globalhelper') {
-        return res.status(403).send('비밀번호가 일치하지 않습니다.<br><a href="/">돌아가기</a>');
-    }
+    const { page_name, element_key, original_text_ko } = req.body;
     try {
-        // 이미 존재하는지 확인
         const [rows] = await pool.query('SELECT * FROM ui_texts WHERE page_name = ? AND element_key = ?', [
             page_name,
             element_key,
         ]);
         if (rows.length === 0) {
-            // 새 row 생성 - original_text_ko와 translated_text_ko에 같은 값을 명시적으로 입력
             await pool.query(
                 `
                 INSERT INTO ui_texts 
                 (page_name, element_key, original_text_ko, translated_text_ko) 
                 VALUES (?, ?, ?, ?)
             `,
-                [
-                    page_name,
-                    element_key,
-                    original_text_ko,
-                    original_text_ko, // translated_text_ko에도 같은 값 입력
-                ]
+                [page_name, element_key, original_text_ko, original_text_ko]
             );
-            res.send('새 UI 텍스트가 등록되었습니다.<br><a href="/">돌아가기</a>');
+            res.json({ success: true });
         } else {
-            // 기존 row 수정 - 두 필드 모두 업데이트
             await pool.query(
                 `
                 UPDATE ui_texts 
@@ -244,66 +313,48 @@ app.post('/', async (req, res) => {
                     translated_text_ko = ? 
                 WHERE page_name = ? AND element_key = ?
             `,
-                [
-                    original_text_ko,
-                    original_text_ko, // translated_text_ko도 같은 값으로 업데이트
-                    page_name,
-                    element_key,
-                ]
+                [original_text_ko, original_text_ko, page_name, element_key]
             );
-            res.send('기존 UI 텍스트가 수정되었습니다.<br><a href="/">돌아가기</a>');
+            res.json({ success: true });
         }
     } catch (err) {
-        console.error('DB 오류:', err); // 서버 콘솔에 자세한 에러 로그 출력
-        res.status(500).send('DB 오류: ' + err.message + '<br><a href="/">돌아가기</a>');
+        res.status(500).json({ error: err.message });
     }
 });
 
-// UI 텍스트 수정 처리 (POST /update)
 app.post('/update', async (req, res) => {
-    const { page_name, element_key, new_text_ko, password } = req.body;
-
-    if (password !== 'globalhelper') {
-        return res.status(403).send('비밀번호가 일치하지 않습니다.<br><a href="/">돌아가기</a>');
-    }
-
+    const { page_name, element_key, new_text_ko } = req.body;
     try {
-        // 해당 텍스트가 존재하는지 확인
         const [rows] = await pool.query('SELECT * FROM ui_texts WHERE page_name = ? AND element_key = ?', [
             page_name,
             element_key,
         ]);
-
         if (rows.length === 0) {
-            return res.status(404).send('수정할 UI 텍스트를 찾을 수 없습니다.<br><a href="/">돌아가기</a>');
+            res.status(404).json({ error: '수정할 UI 텍스트를 찾을 수 없습니다.' });
+        } else {
+            await pool.query(
+                `
+                UPDATE ui_texts 
+                SET original_text_ko = ?, 
+                    translated_text_ko = ? 
+                WHERE page_name = ? AND element_key = ?
+            `,
+                [new_text_ko, new_text_ko, page_name, element_key]
+            );
+            res.json({ success: true });
         }
-
-        // 텍스트 업데이트
-        await pool.query('UPDATE ui_texts SET original_text_ko = ? WHERE page_name = ? AND element_key = ?', [
-            new_text_ko,
-            page_name,
-            element_key,
-        ]);
-
-        res.send('UI 텍스트가 성공적으로 수정되었습니다.<br><a href="/">돌아가기</a>');
     } catch (err) {
-        res.status(500).send('DB 오류: ' + err.message + '<br><a href="/">돌아가기</a>');
+        res.status(500).json({ error: err.message });
     }
 });
 
-// 삭제 처리를 위한 새로운 엔드포인트
 app.post('/delete', async (req, res) => {
-    const { page_name, element_key, password } = req.body;
-
-    if (password !== 'globalhelper') {
-        return res.status(403).send('비밀번호가 일치하지 않습니다.<br><a href="/">돌아가기</a>');
-    }
-
+    const { page_name, element_key } = req.body;
     try {
         await pool.query('DELETE FROM ui_texts WHERE page_name = ? AND element_key = ?', [page_name, element_key]);
-        res.send('UI 텍스트가 성공적으로 삭제되었습니다.<br><a href="/">돌아가기</a>');
+        res.json({ success: true });
     } catch (err) {
-        res.status(500).send('DB 오류: ' + err.message + '<br><a href="/">돌아가기</a>');
+        res.status(500).json({ error: err.message });
     }
 });
 
