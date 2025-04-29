@@ -19,49 +19,36 @@ router.get('/', async (req, res) => {
         const { lang = 'ko', page } = req.query;
         if (!page) return res.status(400).json({ error: 'page 쿼리 필요' });
 
-        let rows;
-        if (lang === 'ko') {
-            // 한국어 요청이면 그냥 original_text_ko만 가져옴
-            [rows] = await pool.query(`SELECT element_key, original_text_ko FROM ui_texts WHERE page_name = ?`, [page]);
-        } else {
-            const langCol = `translated_text_${lang}`;
-            await ensureLangColumn(lang); // 혹시 없는 칼럼 생성
-            [rows] = await pool.query(
-                `SELECT element_key, original_text_ko, ${langCol} FROM ui_texts WHERE page_name = ?`,
-                [page]
-            );
+        const langCol = `translated_text_${lang}`;
+        if (lang !== 'ko') {
+            await ensureLangColumn(lang);
         }
 
+        const [rows] = await pool.query(
+            `SELECT element_key, original_text_ko, ${langCol} FROM ui_texts WHERE page_name = ?`,
+            [page]
+        );
+
         const translations = {};
-
         for (const row of rows) {
-            let text;
-
-            if (lang === 'ko') {
-                // 한국어는 무조건 원본
-                text = row.original_text_ko;
-            } else {
-                const langCol = `translated_text_${lang}`;
-                text = row[langCol];
-
-                if (!text) {
-                    // 번역된 게 없으면 번역 시도
-                    const translated = await translateText(row.original_text_ko, 'ko', lang);
-                    if (translated) {
-                        await pool.query(`UPDATE ui_texts SET ${langCol} = ? WHERE page_name = ? AND element_key = ?`, [
-                            translated,
-                            page,
-                            row.element_key,
-                        ]);
-                        text = translated;
-                    } else {
-                        console.warn(`⚠️ 번역 실패: ${row.original_text_ko} (${lang})`);
-                        text = row.original_text_ko; // fallback
-                    }
+            let text = row[langCol];
+            if (!text && lang !== 'ko') {
+                const translated = await translateText(row.original_text_ko, 'ko', lang);
+                if (translated) {
+                    await pool.query(`UPDATE ui_texts SET ${langCol} = ? WHERE page_name = ? AND element_key = ?`, [
+                        translated,
+                        page,
+                        row.element_key,
+                    ]);
+                    text = translated;
+                } else {
+                    text = row.original_text_ko;
                 }
+            } else if (!text && lang === 'ko') {
+                text = row.original_text_ko;
             }
 
-            translations[row.element_key] = text || row.original_text_ko;
+            translations[row.element_key] = text;
         }
 
         res.json(translations);
