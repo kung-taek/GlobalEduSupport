@@ -114,7 +114,18 @@ app.get('/', async (req, res) => {
         const tableHeaders = columnNames.map((name) => `<th>${name}</th>`).join('');
         const tableRows = rows
             .map((row) => {
-                return `<tr>${columnNames.map((col) => `<td>${row[col] || ''}</td>`).join('')}</tr>`;
+                const deleteButton = `
+                <form method="POST" action="/delete" style="display: inline;">
+                    <input type="hidden" name="page_name" value="${row.page_name}">
+                    <input type="hidden" name="element_key" value="${row.element_key}">
+                    <input type="password" name="password" placeholder="비밀번호" required style="width: 80px;">
+                    <button type="submit" style="color: red; cursor: pointer;">❌</button>
+                </form>
+            `;
+                return `<tr>
+                ${columnNames.map((col) => `<td>${row[col] || ''}</td>`).join('')}
+                <td>${deleteButton}</td>
+            </tr>`;
             })
             .join('');
 
@@ -163,10 +174,28 @@ app.get('/', async (req, res) => {
                 tr:hover {
                     background-color: #f5f5f5;
                 }
+                .delete-btn {
+                    background: none;
+                    border: none;
+                    color: red;
+                    cursor: pointer;
+                }
+                .delete-form {
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                }
+                .password-input {
+                    width: 80px;
+                    padding: 2px 5px;
+                }
             </style>
             <table>
                 <thead>
-                    <tr>${tableHeaders}</tr>
+                    <tr>
+                        ${tableHeaders}
+                        <th>작업</th>
+                    </tr>
                 </thead>
                 <tbody>
                     ${tableRows}
@@ -239,6 +268,22 @@ app.post('/update', async (req, res) => {
         ]);
 
         res.send('UI 텍스트가 성공적으로 수정되었습니다.<br><a href="/">돌아가기</a>');
+    } catch (err) {
+        res.status(500).send('DB 오류: ' + err.message + '<br><a href="/">돌아가기</a>');
+    }
+});
+
+// 삭제 처리를 위한 새로운 엔드포인트
+app.post('/delete', async (req, res) => {
+    const { page_name, element_key, password } = req.body;
+
+    if (password !== 'globalhelper') {
+        return res.status(403).send('비밀번호가 일치하지 않습니다.<br><a href="/">돌아가기</a>');
+    }
+
+    try {
+        await pool.query('DELETE FROM ui_texts WHERE page_name = ? AND element_key = ?', [page_name, element_key]);
+        res.send('UI 텍스트가 성공적으로 삭제되었습니다.<br><a href="/">돌아가기</a>');
     } catch (err) {
         res.status(500).send('DB 오류: ' + err.message + '<br><a href="/">돌아가기</a>');
     }
