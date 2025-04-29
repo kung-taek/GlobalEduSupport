@@ -95,7 +95,6 @@ app.use('/api/ui-texts', uiTextsRouter);
 // 메인화면에 관리자용 UI 텍스트 입력 폼 노출 (GET /)
 app.get('/', (req, res) => {
     res.send(`
-
         <h3>✅ 백엔드 서버 정상 가동!</h3>
         <br>
         <hr>
@@ -106,6 +105,16 @@ app.get('/', (req, res) => {
             <label>한글 원문(original_text_ko): <input name="original_text_ko" required></label><br>
             <label>비밀번호: <input name="password" type="password" required></label><br>
             <button type="submit">값 적용</button>
+        </form>
+
+        <hr>
+        <h2>UI 텍스트 수정 (관리자용)</h2>
+        <form method="POST" action="/update">
+            <label>페이지 이름(page_name): <input name="page_name" required></label><br>
+            <label>엘리먼트 키(element_key): <input name="element_key" required></label><br>
+            <label>새로운 한글 원문(new_text_ko): <input name="new_text_ko" required></label><br>
+            <label>비밀번호: <input name="password" type="password" required></label><br>
+            <button type="submit">텍스트 수정</button>
         </form>
     `);
 });
@@ -139,6 +148,38 @@ app.post('/', async (req, res) => {
             ]);
             res.send('기존 UI 텍스트가 수정되었습니다.<br><a href="/">돌아가기</a>');
         }
+    } catch (err) {
+        res.status(500).send('DB 오류: ' + err.message + '<br><a href="/">돌아가기</a>');
+    }
+});
+
+// UI 텍스트 수정 처리 (POST /update)
+app.post('/update', async (req, res) => {
+    const { page_name, element_key, new_text_ko, password } = req.body;
+
+    if (password !== 'globalhelper') {
+        return res.status(403).send('비밀번호가 일치하지 않습니다.<br><a href="/">돌아가기</a>');
+    }
+
+    try {
+        // 해당 텍스트가 존재하는지 확인
+        const [rows] = await pool.query('SELECT * FROM ui_texts WHERE page_name = ? AND element_key = ?', [
+            page_name,
+            element_key,
+        ]);
+
+        if (rows.length === 0) {
+            return res.status(404).send('수정할 UI 텍스트를 찾을 수 없습니다.<br><a href="/">돌아가기</a>');
+        }
+
+        // 텍스트 업데이트
+        await pool.query('UPDATE ui_texts SET original_text_ko = ? WHERE page_name = ? AND element_key = ?', [
+            new_text_ko,
+            page_name,
+            element_key,
+        ]);
+
+        res.send('UI 텍스트가 성공적으로 수정되었습니다.<br><a href="/">돌아가기</a>');
     } catch (err) {
         res.status(500).send('DB 오류: ' + err.message + '<br><a href="/">돌아가기</a>');
     }
