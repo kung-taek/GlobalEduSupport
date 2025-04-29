@@ -139,9 +139,10 @@ app.get('/', async (req, res) => {
         const safeRowsJson = JSON.stringify(rows).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
 
         res.send(`
-            <h3>✅ 백엔드 서버 정상 가동!</h3>
+            
             
             <div id="auth-section">
+                <h3>✅ 백엔드 서버 정상 가동!</h3>
                 <input type="password" id="auth-password" placeholder="관리자 암호를 입력하세요">
                 <button onclick="authenticate()">확인</button>
             </div>
