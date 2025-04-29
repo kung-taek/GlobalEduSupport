@@ -244,6 +244,8 @@ app.get('/', async (req, res) => {
                         background-color: #ffebeb;
                     }
                 </style>
+                <p>   page_name : 사용될 페이지 이름</p>
+                <p> element_key : 변수 이름</p>
                 <table>
                     <thead>
                         <tr>
