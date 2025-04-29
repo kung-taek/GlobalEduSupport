@@ -220,23 +220,41 @@ app.post('/', async (req, res) => {
             element_key,
         ]);
         if (rows.length === 0) {
-            // 새 row 생성
-            await pool.query('INSERT INTO ui_texts (page_name, element_key, original_text_ko) VALUES (?, ?, ?)', [
-                page_name,
-                element_key,
-                original_text_ko,
-            ]);
+            // 새 row 생성 - original_text_ko와 translated_text_ko에 같은 값을 명시적으로 입력
+            await pool.query(
+                `
+                INSERT INTO ui_texts 
+                (page_name, element_key, original_text_ko, translated_text_ko) 
+                VALUES (?, ?, ?, ?)
+            `,
+                [
+                    page_name,
+                    element_key,
+                    original_text_ko,
+                    original_text_ko, // translated_text_ko에도 같은 값 입력
+                ]
+            );
             res.send('새 UI 텍스트가 등록되었습니다.<br><a href="/">돌아가기</a>');
         } else {
-            // 기존 row 수정
-            await pool.query('UPDATE ui_texts SET original_text_ko = ? WHERE page_name = ? AND element_key = ?', [
-                original_text_ko,
-                page_name,
-                element_key,
-            ]);
+            // 기존 row 수정 - 두 필드 모두 업데이트
+            await pool.query(
+                `
+                UPDATE ui_texts 
+                SET original_text_ko = ?, 
+                    translated_text_ko = ? 
+                WHERE page_name = ? AND element_key = ?
+            `,
+                [
+                    original_text_ko,
+                    original_text_ko, // translated_text_ko도 같은 값으로 업데이트
+                    page_name,
+                    element_key,
+                ]
+            );
             res.send('기존 UI 텍스트가 수정되었습니다.<br><a href="/">돌아가기</a>');
         }
     } catch (err) {
+        console.error('DB 오류:', err); // 서버 콘솔에 자세한 에러 로그 출력
         res.status(500).send('DB 오류: ' + err.message + '<br><a href="/">돌아가기</a>');
     }
 });
