@@ -92,6 +92,28 @@ app.use('/api/auth', authRouter);
 app.use('/api/gpt-kakao', gptKakaoRouter);
 app.use('/api/ui-texts', uiTextsRouter);
 
+// 문자열을 안전하게 이스케이프하는 함수 추가
+function escapeHtml(text) {
+    if (text === null || text === undefined) return '';
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function escapeJs(str) {
+    if (str === null || str === undefined) return '';
+    return str
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '\\"')
+        .replace(/\n/g, '\\n')
+        .replace(/\r/g, '\\r')
+        .replace(/\t/g, '\\t');
+}
+
 // 메인화면에 관리자용 UI 텍스트 입력 폼 노출 (GET /)
 app.get('/', async (req, res) => {
     try {
@@ -175,14 +197,16 @@ app.get('/', async (req, res) => {
                                         return `
                                             <td>
                                                 <div class="editable-cell" 
-                                                     onclick="makeEditable(this, '${row.page_name}', '${row.element_key}')"
-                                                     data-original="${row[col] || ''}">${row[col] || ''}</div>
+                                                     onclick="makeEditable(this)"
+                                                     data-page-name="${escapeHtml(row.page_name)}"
+                                                     data-element-key="${escapeHtml(row.element_key)}"
+                                                     data-original="${escapeHtml(row[col] || '')}">${escapeHtml(row[col] || '')}</div>
                                             </td>`;
                                     }
-                                    return `<td>${row[col] || ''}</td>`;
+                                    return `<td>${escapeHtml(row[col] || '')}</td>`;
                                 }).join('')}
                                 <td>
-                                    <button onclick="handleDelete('${row.page_name}', '${row.element_key}')" 
+                                    <button onclick="handleDelete('${escapeJs(row.page_name)}', '${escapeJs(row.element_key)}')" 
                                             class="delete-btn">❌</button>
                                 </td>
                             </tr>
@@ -423,10 +447,13 @@ app.get('/', async (req, res) => {
                     }
                 }
 
-                function makeEditable(element, pageName, elementKey) {
+                function makeEditable(element) {
                     if (element.classList.contains('editing')) return;
                     
-                    const originalText = element.textContent;
+                    const originalText = element.getAttribute('data-original');
+                    const pageName = element.getAttribute('data-page-name');
+                    const elementKey = element.getAttribute('data-element-key');
+                    
                     element.classList.add('editing');
                     
                     const input = document.createElement('input');
@@ -436,7 +463,7 @@ app.get('/', async (req, res) => {
                     const controls = document.createElement('div');
                     controls.className = 'edit-controls';
                     controls.innerHTML = `
-                        <button class="save-btn" onclick="saveEdit(this, '${pageName}', '${elementKey}')">저장</button>
+                        <button class="save-btn" onclick="saveEdit(this)">저장</button>
                         <button class="cancel-btn" onclick="cancelEdit(this)">취소</button>
                     `;
                     
@@ -445,20 +472,21 @@ app.get('/', async (req, res) => {
                     element.appendChild(controls);
                     input.focus();
 
-                    // Enter 키로 저장, Esc 키로 취소
                     input.addEventListener('keydown', function(e) {
                         if (e.key === 'Enter') {
-                            saveEdit(controls.querySelector('.save-btn'), pageName, elementKey);
+                            saveEdit(controls.querySelector('.save-btn'));
                         } else if (e.key === 'Escape') {
                             cancelEdit(controls.querySelector('.cancel-btn'));
                         }
                     });
                 }
 
-                async function saveEdit(button, pageName, elementKey) {
+                async function saveEdit(button) {
                     const cell = button.closest('.editable-cell');
                     const input = cell.querySelector('input');
                     const newText = input.value.trim();
+                    const pageName = cell.getAttribute('data-page-name');
+                    const elementKey = cell.getAttribute('data-element-key');
                     
                     if (newText === '') {
                         alert('내용을 입력해주세요.');
