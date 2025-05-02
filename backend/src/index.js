@@ -390,7 +390,7 @@ app.get('/', async (req, res) => {
                         cell.classList.remove('editing');
                         
                         // 모든 내용을 원래 텍스트로 교체
-                        cell.innerHTML = originalText;
+                        cell.textContent = originalText;
                     }
 
                     document.addEventListener('DOMContentLoaded', function() {
