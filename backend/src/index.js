@@ -139,7 +139,7 @@ app.get('/', async (req, res) => {
         const safeRowsJson = JSON.stringify(rows).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
 
         res.send(`
-            
+           
             
             <div id="auth-section">
                 <h3>✅ 백엔드 서버 정상 가동!</h3>
@@ -197,57 +197,7 @@ app.get('/', async (req, res) => {
                 </table>
 
                 <style>
-                    #auth-section {
-                        margin: 20px 0;
-                        padding: 20px;
-                        text-align: center;
-                    }
-                    #auth-password {
-                        padding: 5px;
-                        margin-right: 10px;
-                    }
-
-                    /* 폼 스타일 추가 */
-                    .admin-form {
-                        max-width: 800px;
-                        margin: 20px 0;
-                    }
-
-                    .form-group {
-                        display: flex;
-                        align-items: center;
-                        margin-bottom: 10px;
-                    }
-
-                    .form-group label {
-                        width: 200px;
-                        text-align: right;
-                        padding-right: 15px;
-                        flex-shrink: 0;
-                    }
-
-                    .form-group input {
-                        width: 400px;
-                        padding: 5px;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                    }
-
-                    .admin-form button {
-                        margin-left: 200px;
-                        padding: 8px 15px;
-                        background-color: #4CAF50;
-                        color: white;
-                        border: none;
-                        border-radius: 4px;
-                        cursor: pointer;
-                    }
-
-                    .admin-form button:hover {
-                        background-color: #45a049;
-                    }
-
-                    /* 기존 테이블 스타일 유지 */
+                    /* 기존 테이블 스타일 */
                     table {
                         border-collapse: collapse;
                         width: 100%;
@@ -267,17 +217,8 @@ app.get('/', async (req, res) => {
                     tr:hover {
                         background-color: #f5f5f5;
                     }
-                    .delete-btn {
-                        background: none;
-                        border: none;
-                        color: red;
-                        cursor: pointer;
-                        padding: 5px 10px;
-                    }
-                    .delete-btn:hover {
-                        background-color: #ffebeb;
-                    }
                     
+                    /* 수정된 편집 관련 스타일 */
                     .editable-cell {
                         min-height: 20px;
                         padding: 5px;
@@ -330,224 +271,212 @@ app.get('/', async (req, res) => {
                     .cancel-btn:hover {
                         background-color: #da190b;
                     }
+                    .delete-btn {
+                        background: none;
+                        border: none;
+                        color: red;
+                        cursor: pointer;
+                    }
+                    .delete-btn:hover {
+                        background-color: #ffebeb;
+                    }
                 </style>
-                <p>   page_name : 사용될 페이지 이름</p>
-                <p> element_key : 변수 이름</p>
-            </div>
 
-            <style>
-                /* 기존 스타일 유지 */
-                #back {
-                    margin: 20px 0;
-                    padding: 20px;
-                    text-align: center;
-                }
-                #auth-section {
-                    margin: 20px 0;
-                    padding: 20px;
-                    text-align: center;
-                }
-                #auth-password {
-                    padding: 5px;
-                    margin-right: 10px;
-                }
-            </style>
+                <script>
+                    // 데이터를 전역 변수로 안전하게 저장
+                    const tableData = ${safeRowsJson};
+                    const columnNames = ${JSON.stringify(columnNames)};
 
-            <script>
-                // 데이터를 전역 변수로 안전하게 저장
-                const tableData = ${safeRowsJson};
-                const columnNames = ${JSON.stringify(columnNames)};
+                    // 테이블 데이터 렌더링 함수
+                    function renderTable() {
+                        const tbody = document.getElementById('tableBody');
+                        tbody.innerHTML = tableData.map(row => {
+                            const cells = columnNames.map(col => {
+                                if (col === 'id') {
+                                    return \`<td>${row[col] || ''}</td>\`;
+                                }
+                                return \`
+                                    <td>
+                                        <div class="editable-cell"
+                                             onclick="makeEditable(this)"
+                                             data-page-name="\${row.page_name}"
+                                             data-element-key="\${row.element_key}"
+                                             data-column="\${col}"
+                                             data-original="\${row[col] || ''}">\${row[col] || ''}</div>
+                                    </td>
+                                \`;
+                            }).join('');
 
-                // 테이블 데이터 렌더링 함수
-                function renderTable() {
-                    const tbody = document.getElementById('tableBody');
-                    tbody.innerHTML = tableData.map(row => {
-                        const cells = columnNames.map(col => {
-                            // 삭제 버튼 열은 제외
-                            if (col === 'id') {
-                                return `<td>${row[col] || ''}</td>`;
-                            }
-                            return `
-                                <td>
-                                    <div class="editable-cell"
-                                         onclick="makeEditable(this)"
-                                         data-page-name="${row.page_name}"
-                                         data-element-key="${row.element_key}"
-                                         data-column="${col}"
-                                         data-original="${row[col] || ''}">${row[col] || ''}</div>
-                                </td>
-                            `;
+                            return \`
+                                <tr>
+                                    \${cells}
+                                    <td>
+                                        <button onclick="handleDelete('\${row.page_name}', '\${row.element_key}')" 
+                                                class="delete-btn">❌</button>
+                                    </td>
+                                </tr>
+                            \`;
                         }).join('');
-
-                        return `
-                            <tr>
-                                ${cells}
-                                <td>
-                                    <button onclick="handleDelete('${row.page_name}', '${row.element_key}')" 
-                                            class="delete-btn">❌</button>
-                                </td>
-                            </tr>
-                        `;
-                    }).join('');
-                }
-
-                // 초기 테이블 렌더링
-                renderTable();
-
-                function makeEditable(element) {
-                    if (element.classList.contains('editing')) return;
-                    
-                    const originalText = element.getAttribute('data-original');
-                    const column = element.getAttribute('data-column');
-                    element.classList.add('editing');
-                    
-                    const input = document.createElement('input');
-                    input.value = originalText;
-                    input.className = 'edit-input';
-                    
-                    const controls = document.createElement('div');
-                    controls.className = 'edit-controls';
-                    controls.innerHTML = `
-                        <button class="save-btn" onclick="saveEdit(this)">저장</button>
-                        <button class="cancel-btn" onclick="cancelEdit(this)">취소</button>
-                    `;
-                    
-                    element.innerHTML = '';
-                    element.appendChild(input);
-                    element.appendChild(controls);
-                    input.focus();
-
-                    input.addEventListener('keydown', function(e) {
-                        if (e.key === 'Enter') {
-                            saveEdit(controls.querySelector('.save-btn'));
-                        } else if (e.key === 'Escape') {
-                            cancelEdit(controls.querySelector('.cancel-btn'));
-                        }
-                    });
-                }
-
-                async function saveEdit(button) {
-                    const cell = button.closest('.editable-cell');
-                    const input = cell.querySelector('input');
-                    const newText = input.value.trim();
-                    const pageName = cell.getAttribute('data-page-name');
-                    const elementKey = cell.getAttribute('data-element-key');
-                    const column = cell.getAttribute('data-column');
-                    
-                    if (!newText) {
-                        alert('내용을 입력해주세요.');
-                        return;
                     }
 
-                    try {
-                        const response = await fetch('/update-column', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                page_name: pageName,
-                                element_key: elementKey,
-                                column: column,
-                                value: newText
-                            })
-                        });
+                    // 초기 테이블 렌더링
+                    renderTable();
+
+                    function makeEditable(element) {
+                        if (element.classList.contains('editing')) return;
                         
-                        if (response.ok) {
-                            window.location.reload();
-                        } else {
-                            const errorData = await response.json();
-                            alert(errorData.error || '수정 중 오류가 발생했습니다.');
+                        const originalText = element.getAttribute('data-original');
+                        const column = element.getAttribute('data-column');
+                        element.classList.add('editing');
+                        
+                        const input = document.createElement('input');
+                        input.value = originalText;
+                        input.className = 'edit-input';
+                        
+                        const controls = document.createElement('div');
+                        controls.className = 'edit-controls';
+                        controls.innerHTML = \`
+                            <button class="save-btn" onclick="saveEdit(this)">저장</button>
+                            <button class="cancel-btn" onclick="cancelEdit(this)">취소</button>
+                        \`;
+                        
+                        element.innerHTML = '';
+                        element.appendChild(input);
+                        element.appendChild(controls);
+                        input.focus();
+
+                        input.addEventListener('keydown', function(e) {
+                            if (e.key === 'Enter') {
+                                saveEdit(controls.querySelector('.save-btn'));
+                            } else if (e.key === 'Escape') {
+                                cancelEdit(controls.querySelector('.cancel-btn'));
+                            }
+                        });
+                    }
+
+                    async function saveEdit(button) {
+                        const cell = button.closest('.editable-cell');
+                        const input = cell.querySelector('input');
+                        const newText = input.value.trim();
+                        const pageName = cell.getAttribute('data-page-name');
+                        const elementKey = cell.getAttribute('data-element-key');
+                        const column = cell.getAttribute('data-column');
+                        
+                        if (!newText) {
+                            alert('내용을 입력해주세요.');
+                            return;
+                        }
+
+                        try {
+                            const response = await fetch('/update-column', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    page_name: pageName,
+                                    element_key: elementKey,
+                                    column: column,
+                                    value: newText
+                                })
+                            });
+                            
+                            if (response.ok) {
+                                window.location.reload();
+                            } else {
+                                const errorData = await response.json();
+                                alert(errorData.error || '수정 중 오류가 발생했습니다.');
+                                cancelEdit(button);
+                            }
+                        } catch (error) {
+                            alert('오류가 발생했습니다: ' + error.message);
                             cancelEdit(button);
                         }
-                    } catch (error) {
-                        alert('오류가 발생했습니다: ' + error.message);
-                        cancelEdit(button);
                     }
-                }
 
-                function cancelEdit(button) {
-                    const cell = button.closest('.editable-cell');
-                    const originalText = cell.getAttribute('data-original');
-                    cell.classList.remove('editing');
-                    cell.textContent = originalText;
-                }
-
-                // 페이지 로드 시 인증 상태 확인
-                document.addEventListener('DOMContentLoaded', function() {
-                    const isAuthenticated = localStorage.getItem('isAuthenticated');
-                    if (isAuthenticated === 'true') {
-                        showAdminContent();
+                    function cancelEdit(button) {
+                        const cell = button.closest('.editable-cell');
+                        const originalText = cell.getAttribute('data-original');
+                        cell.classList.remove('editing');
+                        cell.textContent = originalText;
                     }
-                });
 
-                function authenticate() {
-                    const password = document.getElementById('auth-password').value;
-                    if (password === 'globalhelper') {
-                        localStorage.setItem('isAuthenticated', 'true');
-                        showAdminContent();
-                    } else {
-                        alert('잘못된 암호입니다.');
-                    }
-                }
-
-                function showAdminContent() {
-                    document.getElementById('admin-content').style.display = 'block';
-                    document.getElementById('auth-section').style.display = 'none';
-                }
-
-                async function handleSubmit(event, type) {
-                    event.preventDefault();
-                    const form = event.target;
-                    const formData = new FormData(form);
-                    const data = Object.fromEntries(formData.entries());
-                    
-                    try {
-                        const response = await fetch(type === 'add' ? '/' : '/update', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(data)
-                        });
-                        
-                        if (response.ok) {
-                            window.location.reload();
-                        } else {
-                            const errorData = await response.json();
-                            alert(errorData.error || '오류가 발생했습니다.');
+                    // 페이지 로드 시 인증 상태 확인
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const isAuthenticated = localStorage.getItem('isAuthenticated');
+                        if (isAuthenticated === 'true') {
+                            showAdminContent();
                         }
-                    } catch (error) {
-                        alert('오류가 발생했습니다: ' + error.message);
-                    }
-                }
+                    });
 
-                async function handleDelete(pageName, elementKey) {
-                    if (!confirm('정말 삭제하시겠습니까?')) return;
-                    
-                    try {
-                        const response = await fetch('/delete', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                page_name: pageName,
-                                element_key: elementKey
-                            })
-                        });
-                        
-                        if (response.ok) {
-                            window.location.reload();
+                    function authenticate() {
+                        const password = document.getElementById('auth-password').value;
+                        if (password === 'globalhelper') {
+                            localStorage.setItem('isAuthenticated', 'true');
+                            showAdminContent();
                         } else {
-                            const errorData = await response.json();
-                            alert(errorData.error || '삭제 중 오류가 발생했습니다.');
+                            alert('잘못된 암호입니다.');
                         }
-                    } catch (error) {
-                        alert('오류가 발생했습니다: ' + error.message);
                     }
-                }
-            </script>
+
+                    function showAdminContent() {
+                        document.getElementById('admin-content').style.display = 'block';
+                        document.getElementById('auth-section').style.display = 'none';
+                    }
+
+                    async function handleSubmit(event, type) {
+                        event.preventDefault();
+                        const form = event.target;
+                        const formData = new FormData(form);
+                        const data = Object.fromEntries(formData.entries());
+                        
+                        try {
+                            const response = await fetch(type === 'add' ? '/' : '/update', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify(data)
+                            });
+                            
+                            if (response.ok) {
+                                window.location.reload();
+                            } else {
+                                const errorData = await response.json();
+                                alert(errorData.error || '오류가 발생했습니다.');
+                            }
+                        } catch (error) {
+                            alert('오류가 발생했습니다: ' + error.message);
+                        }
+                    }
+
+                    async function handleDelete(pageName, elementKey) {
+                        if (!confirm('정말 삭제하시겠습니까?')) return;
+                        
+                        try {
+                            const response = await fetch('/delete', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    page_name: pageName,
+                                    element_key: elementKey
+                                })
+                            });
+                            
+                            if (response.ok) {
+                                window.location.reload();
+                            } else {
+                                const errorData = await response.json();
+                                alert(errorData.error || '삭제 중 오류가 발생했습니다.');
+                            }
+                        } catch (error) {
+                            alert('오류가 발생했습니다: ' + error.message);
+                        }
+                    }
+                </script>
+            </div>
         `);
     } catch (err) {
         res.status(500).send('데이터베이스 조회 중 오류 발생: ' + err.message);
@@ -630,15 +559,22 @@ app.post('/update-column', async (req, res) => {
     const { page_name, element_key, column, value } = req.body;
     try {
         // 컬럼 이름 검증 (SQL 인젝션 방지)
-        const allowedColumns = ['page_name', 'element_key', 'original_text_ko', 'translated_text_ko', 'translated_text_en'];
+        const allowedColumns = [
+            'page_name',
+            'element_key',
+            'original_text_ko',
+            'translated_text_ko',
+            'translated_text_en',
+        ];
         if (!allowedColumns.includes(column)) {
             return res.status(400).json({ error: '유효하지 않은 컬럼입니다.' });
         }
 
-        await pool.query(
-            `UPDATE ui_texts SET ${column} = ? WHERE page_name = ? AND element_key = ?`,
-            [value, page_name, element_key]
-        );
+        await pool.query(`UPDATE ui_texts SET ${column} = ? WHERE page_name = ? AND element_key = ?`, [
+            value,
+            page_name,
+            element_key,
+        ]);
         res.json({ success: true });
     } catch (err) {
         console.error('컬럼 업데이트 오류:', err);
