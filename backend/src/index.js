@@ -135,7 +135,7 @@ app.get('/', async (req, res) => {
         const columnNames = columns.map((col) => col.COLUMN_NAME);
         const tableHeaders = columnNames.map((name) => `<th>${name}</th>`).join('');
 
-        // 데이터를 JSON 문자열로 안전하게 변환
+        // 데이터를 JSON 문자열로 안전하게 변환 ㄹㄹ
         const safeRowsJson = JSON.stringify(rows).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
 
         res.send(`
