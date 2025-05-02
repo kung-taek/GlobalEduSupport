@@ -282,6 +282,7 @@ app.get('/', async (req, res) => {
                         min-height: 20px;
                         padding: 5px;
                         cursor: pointer;
+                        position: relative;
                     }
                     .editable-cell:hover {
                         background-color: #f0f0f0;
@@ -289,30 +290,45 @@ app.get('/', async (req, res) => {
                     .editable-cell.editing {
                         padding: 0;
                     }
-                    .editable-cell input {
+                    .edit-input {
                         width: 100%;
                         padding: 5px;
                         box-sizing: border-box;
                         border: 2px solid #4CAF50;
+                        border-radius: 4px;
                     }
                     .edit-controls {
+                        position: absolute;
+                        right: 0;
+                        top: 100%;
+                        background: white;
+                        border: 1px solid #ddd;
+                        border-radius: 4px;
+                        padding: 5px;
+                        z-index: 100;
                         display: flex;
                         gap: 5px;
-                        margin-top: 5px;
+                        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
                     }
                     .edit-controls button {
                         padding: 3px 8px;
                         cursor: pointer;
+                        border: none;
+                        border-radius: 3px;
                     }
                     .save-btn {
                         background-color: #4CAF50;
                         color: white;
-                        border: none;
+                    }
+                    .save-btn:hover {
+                        background-color: #45a049;
                     }
                     .cancel-btn {
                         background-color: #f44336;
                         color: white;
-                        border: none;
+                    }
+                    .cancel-btn:hover {
+                        background-color: #da190b;
                     }
                 </style>
                 <p>   page_name : 사용될 페이지 이름</p>
@@ -347,29 +363,31 @@ app.get('/', async (req, res) => {
                     const tbody = document.getElementById('tableBody');
                     tbody.innerHTML = tableData.map(row => {
                         const cells = columnNames.map(col => {
-                            if (col === 'original_text_ko') {
-                                return \`
-                                    <td>
-                                        <div class="editable-cell"
-                                             onclick="makeEditable(this)"
-                                             data-page-name="\${row.page_name}"
-                                             data-element-key="\${row.element_key}"
-                                             data-original="\${row[col] || ''}">\${row[col] || ''}</div>
-                                    </td>
-                                \`;
+                            // 삭제 버튼 열은 제외
+                            if (col === 'id') {
+                                return `<td>${row[col] || ''}</td>`;
                             }
-                            return \`<td>\${row[col] || ''}</td>\`;
+                            return `
+                                <td>
+                                    <div class="editable-cell"
+                                         onclick="makeEditable(this)"
+                                         data-page-name="${row.page_name}"
+                                         data-element-key="${row.element_key}"
+                                         data-column="${col}"
+                                         data-original="${row[col] || ''}">${row[col] || ''}</div>
+                                </td>
+                            `;
                         }).join('');
 
-                        return \`
+                        return `
                             <tr>
-                                \${cells}
+                                ${cells}
                                 <td>
-                                    <button onclick="handleDelete('\${row.page_name}', '\${row.element_key}')" 
+                                    <button onclick="handleDelete('${row.page_name}', '${row.element_key}')" 
                                             class="delete-btn">❌</button>
                                 </td>
                             </tr>
-                        \`;
+                        `;
                     }).join('');
                 }
 
@@ -380,17 +398,19 @@ app.get('/', async (req, res) => {
                     if (element.classList.contains('editing')) return;
                     
                     const originalText = element.getAttribute('data-original');
+                    const column = element.getAttribute('data-column');
                     element.classList.add('editing');
                     
                     const input = document.createElement('input');
                     input.value = originalText;
+                    input.className = 'edit-input';
                     
                     const controls = document.createElement('div');
                     controls.className = 'edit-controls';
-                    controls.innerHTML = \`
+                    controls.innerHTML = `
                         <button class="save-btn" onclick="saveEdit(this)">저장</button>
                         <button class="cancel-btn" onclick="cancelEdit(this)">취소</button>
-                    \`;
+                    `;
                     
                     element.innerHTML = '';
                     element.appendChild(input);
@@ -412,6 +432,7 @@ app.get('/', async (req, res) => {
                     const newText = input.value.trim();
                     const pageName = cell.getAttribute('data-page-name');
                     const elementKey = cell.getAttribute('data-element-key');
+                    const column = cell.getAttribute('data-column');
                     
                     if (!newText) {
                         alert('내용을 입력해주세요.');
@@ -419,7 +440,7 @@ app.get('/', async (req, res) => {
                     }
 
                     try {
-                        const response = await fetch('/update', {
+                        const response = await fetch('/update-column', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -427,7 +448,8 @@ app.get('/', async (req, res) => {
                             body: JSON.stringify({
                                 page_name: pageName,
                                 element_key: elementKey,
-                                new_text_ko: newText
+                                column: column,
+                                value: newText
                             })
                         });
                         
@@ -599,6 +621,27 @@ app.post('/delete', async (req, res) => {
         await pool.query('DELETE FROM ui_texts WHERE page_name = ? AND element_key = ?', [page_name, element_key]);
         res.json({ success: true });
     } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 새로운 엔드포인트 추가
+app.post('/update-column', async (req, res) => {
+    const { page_name, element_key, column, value } = req.body;
+    try {
+        // 컬럼 이름 검증 (SQL 인젝션 방지)
+        const allowedColumns = ['page_name', 'element_key', 'original_text_ko', 'translated_text_ko', 'translated_text_en'];
+        if (!allowedColumns.includes(column)) {
+            return res.status(400).json({ error: '유효하지 않은 컬럼입니다.' });
+        }
+
+        await pool.query(
+            `UPDATE ui_texts SET ${column} = ? WHERE page_name = ? AND element_key = ?`,
+            [value, page_name, element_key]
+        );
+        res.json({ success: true });
+    } catch (err) {
+        console.error('컬럼 업데이트 오류:', err);
         res.status(500).json({ error: err.message });
     }
 });
