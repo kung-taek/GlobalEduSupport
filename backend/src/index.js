@@ -130,7 +130,10 @@ app.get('/', async (req, res) => {
         const [rows] = await pool.query('SELECT * FROM ui_texts');
 
         // 데이터를 JSON 문자열로 안전하게 변환
-        const safeRowsJson = JSON.stringify(rows).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
+        const safeRowsJson = JSON.stringify(rows)
+            .replace(/</g, '\\u003c')
+            .replace(/>/g, '\\u003e')
+            .replace(/"/g, '\\"');
         const columnNames = columns.map((col) => col.COLUMN_NAME);
         const tableHeaders = columnNames.map((name) => `<th>${name}</th>`).join('');
 
@@ -259,16 +262,17 @@ app.get('/', async (req, res) => {
                         tbody.innerHTML = tableData.map(row => {
                             const cells = columnNames.map(col => {
                                 if (col === 'id') {
-                                    return \`<td>\${row[col] || ''}</td>\`;
+                                    return \`<td>\${(row[col] || '').replace(/"/g, '&quot;')}</td>\`;
                                 }
+                                const safeValue = (row[col] || '').replace(/"/g, '&quot;');
                                 return \`
                                     <td>
-                                        <div class='editable-cell'
-                                             onclick='makeEditable(this)'
-                                             data-page-name="\${row.page_name}"
-                                             data-element-key="\${row.element_key}"
+                                        <div class="editable-cell"
+                                             onclick="makeEditable(this)"
+                                             data-page-name="\${row.page_name.replace(/"/g, '&quot;')}"
+                                             data-element-key="\${row.element_key.replace(/"/g, '&quot;')}"
                                              data-column="\${col}"
-                                             data-original="\${row[col] || ''}">\${row[col] || ''}</div>
+                                             data-original="\${safeValue}">\${safeValue}</div>
                                     </td>
                                 \`;
                             }).join('');
@@ -277,7 +281,7 @@ app.get('/', async (req, res) => {
                                 <tr>
                                     \${cells}
                                     <td>
-                                        <button onclick="handleDelete('\${row.page_name}', '\${row.element_key}')" 
+                                        <button onclick="handleDelete('\${row.page_name.replace(/"/g, '&quot;')}', '\${row.element_key.replace(/"/g, '&quot;')}')" 
                                                 class="delete-btn">❌</button>
                                     </td>
                                 </tr>
@@ -472,3 +476,46 @@ app.post('/', async (req, res) => {
         } else {
             await pool.query(
                 `
+                UPDATE ui_texts SET original_text_ko = ? WHERE page_name = ? AND element_key = ?
+            `,
+                [original_text_ko, page_name, element_key]
+            );
+            res.json({ success: true });
+        }
+    } catch (err) {
+        console.error('오류 발생:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 컬럼 업데이트 엔드포인트
+app.post('/update-column', async (req, res) => {
+    const { page_name, element_key, column, value } = req.body;
+    try {
+        const allowedColumns = [
+            'page_name',
+            'element_key',
+            'original_text_ko',
+            'translated_text_ko',
+            'translated_text_en',
+        ];
+        if (!allowedColumns.includes(column)) {
+            return res.status(400).json({ error: '유효하지 않은 컬럼입니다.' });
+        }
+
+        await pool.query(`UPDATE ui_texts SET ${column} = ? WHERE page_name = ? AND element_key = ?`, [
+            value,
+            page_name,
+            element_key,
+        ]);
+        res.json({ success: true });
+    } catch (err) {
+        console.error('컬럼 업데이트 오류:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`✅ 서버 실행 중: http://0.0.0.0:${PORT}`);
+});
