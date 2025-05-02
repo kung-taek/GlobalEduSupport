@@ -58,4 +58,37 @@ router.get('/', async (req, res) => {
     }
 });
 
+// 번역 테스트용 엔드포인트 추가
+router.post('/translate-test', async (req, res) => {
+    try {
+        const { text, from = 'ko', to = 'en' } = req.body;
+
+        if (!text) {
+            return res.status(400).json({ error: '번역할 텍스트를 입력해주세요.' });
+        }
+
+        const translated = await translateText(text, from, to);
+
+        if (translated === null) {
+            return res.status(500).json({
+                error: '번역 실패',
+                details: '번역 API 호출 중 오류가 발생했습니다.',
+            });
+        }
+
+        res.json({
+            original: text,
+            translated,
+            from,
+            to,
+        });
+    } catch (err) {
+        console.error('번역 테스트 오류:', err);
+        res.status(500).json({
+            error: '서버 오류',
+            message: err.message,
+        });
+    }
+});
+
 export default router;

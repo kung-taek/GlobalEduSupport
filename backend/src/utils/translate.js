@@ -1,9 +1,12 @@
 import axios from 'axios';
+
 export async function translateText(text, from, to) {
     try {
         const apiKey = process.env.MYMEMORY_API_KEY;
-        if (!apiKey) {
-            console.warn('⚠️ MyMemory API 키가 설정되어 있지 않습니다.');
+        const email = process.env.MyMEMORY_NAVER_EMAIL;
+
+        if (!apiKey || !email) {
+            console.warn('⚠️ MyMemory API 키 또는 이메일이 설정되어 있지 않습니다.');
             return null;
         }
 
@@ -11,7 +14,7 @@ export async function translateText(text, from, to) {
 
         const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(
             text
-        )}&langpair=${from}|${to}&key=${apiKey}`;
+        )}&langpair=${from}|${to}&key=${apiKey}&de=${email}`;
 
         const response = await axios.get(url);
 
