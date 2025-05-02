@@ -361,8 +361,12 @@ app.get('/', async (req, res) => {
                     function cancelEdit(button) {
                         const cell = button.closest('.editable-cell');
                         const originalText = cell.getAttribute('data-original');
+                        
+                        // 편집 모드 클래스 제거
                         cell.classList.remove('editing');
-                        cell.textContent = originalText;
+                        
+                        // 모든 내용을 원래 텍스트로 교체
+                        cell.innerHTML = originalText;
                     }
 
                     // 페이지 로드 시 인증 상태 확인
@@ -468,96 +472,3 @@ app.post('/', async (req, res) => {
         } else {
             await pool.query(
                 `
-                UPDATE ui_texts 
-                SET original_text_ko = ?, 
-                    translated_text_ko = ? 
-                WHERE page_name = ? AND element_key = ?
-            `,
-                [original_text_ko, original_text_ko, page_name, element_key]
-            );
-            res.json({ success: true });
-        }
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.post('/update', async (req, res) => {
-    const { page_name, element_key, new_text_ko } = req.body;
-    try {
-        const [rows] = await pool.query('SELECT * FROM ui_texts WHERE page_name = ? AND element_key = ?', [
-            page_name,
-            element_key,
-        ]);
-        if (rows.length === 0) {
-            res.status(404).json({ error: '수정할 UI 텍스트를 찾을 수 없습니다.' });
-        } else {
-            await pool.query(
-                `
-                UPDATE ui_texts 
-                SET original_text_ko = ?, 
-                    translated_text_ko = ? 
-                WHERE page_name = ? AND element_key = ?
-            `,
-                [new_text_ko, new_text_ko, page_name, element_key]
-            );
-            res.json({ success: true });
-        }
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-app.post('/delete', async (req, res) => {
-    const { page_name, element_key } = req.body;
-    try {
-        await pool.query('DELETE FROM ui_texts WHERE page_name = ? AND element_key = ?', [page_name, element_key]);
-        res.json({ success: true });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// 새로운 엔드포인트 추가
-app.post('/update-column', async (req, res) => {
-    const { page_name, element_key, column, value } = req.body;
-    try {
-        const allowedColumns = [
-            'page_name',
-            'element_key',
-            'original_text_ko',
-            'translated_text_ko',
-            'translated_text_en',
-        ];
-        if (!allowedColumns.includes(column)) {
-            return res.status(400).json({ error: '유효하지 않은 컬럼입니다.' });
-        }
-
-        await pool.query(`UPDATE ui_texts SET ${column} = ? WHERE page_name = ? AND element_key = ?`, [
-            value,
-            page_name,
-            element_key,
-        ]);
-        res.json({ success: true });
-    } catch (err) {
-        console.error('컬럼 업데이트 오류:', err);
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// DB 연결 확인 후 서버 시작
-const PORT = process.env.PORT || 5000;
-
-(async () => {
-    try {
-        const connection = await pool.getConnection();
-        console.log('✅ MySQL 연결 성공!');
-        connection.release();
-
-        app.listen(PORT, '0.0.0.0', () => {
-            console.log(`✅ 서버 실행 중: http://0.0.0.0:${PORT}`);
-        });
-    } catch (err) {
-        console.error('❌ MySQL 연결 실패:', err.message);
-    }
-})();
