@@ -117,30 +117,25 @@ app.get('/', async (req, res) => {
     try {
         // 모든 컬럼 정보 가져오기
         const [columns] = await pool.query(
-            `
-            SELECT COLUMN_NAME 
+            `SELECT COLUMN_NAME 
             FROM INFORMATION_SCHEMA.COLUMNS 
             WHERE TABLE_NAME = 'ui_texts' 
-            AND TABLE_SCHEMA = ?
-        `,
+            AND TABLE_SCHEMA = ?`,
             [process.env.DB_NAME || 'AWS_DB']
         );
 
         // 모든 데이터 가져오기
         const [rows] = await pool.query('SELECT * FROM ui_texts');
 
-        // HTML 테이블 생성
+        // 데이터를 JSON 문자열로 안전하게 변환
+        const safeRowsJson = JSON.stringify(rows).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
         const columnNames = columns.map((col) => col.COLUMN_NAME);
         const tableHeaders = columnNames.map((name) => `<th>${name}</th>`).join('');
 
-        // 데이터를 JSON 문자열로 안전하게 변환
-        const safeRowsJson = JSON.stringify(rows).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
-
         res.send(`
-           
+            <h3>✅ 백엔드 서버 정상 가동!</h3>
             
             <div id="auth-section">
-                <h3>✅ 백엔드 서버 정상 가동!</h3>
                 <input type="password" id="auth-password" placeholder="관리자 암호를 입력하세요">
                 <button onclick="authenticate()">확인</button>
             </div>
@@ -195,40 +190,19 @@ app.get('/', async (req, res) => {
                 </table>
 
                 <style>
-                    /* 기존 테이블 스타일 */
-                    table {
-                        border-collapse: collapse;
-                        width: 100%;
-                        margin-top: 20px;
-                    }
-                    th, td {
-                        border: 1px solid #ddd;
-                        padding: 8px;
-                        text-align: left;
-                    }
-                    th {
-                        background-color: #f2f2f2;
-                    }
-                    tr:nth-child(even) {
-                        background-color: #f9f9f9;
-                    }
-                    tr:hover {
-                        background-color: #f5f5f5;
-                    }
-                    
-                    /* 수정된 편집 관련 스타일 */
+                    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+                    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                    th { background-color: #f2f2f2; }
+                    tr:nth-child(even) { background-color: #f9f9f9; }
+                    tr:hover { background-color: #f5f5f5; }
                     .editable-cell {
                         min-height: 20px;
                         padding: 5px;
                         cursor: pointer;
                         position: relative;
                     }
-                    .editable-cell:hover {
-                        background-color: #f0f0f0;
-                    }
-                    .editable-cell.editing {
-                        padding: 0;
-                    }
+                    .editable-cell:hover { background-color: #f0f0f0; }
+                    .editable-cell.editing { padding: 0; }
                     .edit-input {
                         width: 100%;
                         padding: 5px;
@@ -259,39 +233,31 @@ app.get('/', async (req, res) => {
                         background-color: #4CAF50;
                         color: white;
                     }
-                    .save-btn:hover {
-                        background-color: #45a049;
-                    }
+                    .save-btn:hover { background-color: #45a049; }
                     .cancel-btn {
                         background-color: #f44336;
                         color: white;
                     }
-                    .cancel-btn:hover {
-                        background-color: #da190b;
-                    }
+                    .cancel-btn:hover { background-color: #da190b; }
                     .delete-btn {
                         background: none;
                         border: none;
                         color: red;
                         cursor: pointer;
                     }
-                    .delete-btn:hover {
-                        background-color: #ffebeb;
-                    }
+                    .delete-btn:hover { background-color: #ffebeb; }
                 </style>
 
                 <script>
-                    // 데이터를 전역 변수로 안전하게 저장
                     const tableData = ${safeRowsJson};
                     const columnNames = ${JSON.stringify(columnNames)};
 
-                    // 테이블 데이터 렌더링 함수
                     function renderTable() {
                         const tbody = document.getElementById('tableBody');
                         tbody.innerHTML = tableData.map(row => {
                             const cells = columnNames.map(col => {
                                 if (col === 'id') {
-                                    return \`<td>${row[col] || ''}</td>\`;
+                                    return \`<td>\${row[col] || ''}</td>\`;
                                 }
                                 return \`
                                     <td>
@@ -317,14 +283,12 @@ app.get('/', async (req, res) => {
                         }).join('');
                     }
 
-                    // 초기 테이블 렌더링
                     renderTable();
 
                     function makeEditable(element) {
                         if (element.classList.contains('editing')) return;
                         
                         const originalText = element.getAttribute('data-original');
-                        const column = element.getAttribute('data-column');
                         element.classList.add('editing');
                         
                         const input = document.createElement('input');
@@ -556,7 +520,6 @@ app.post('/delete', async (req, res) => {
 app.post('/update-column', async (req, res) => {
     const { page_name, element_key, column, value } = req.body;
     try {
-        // 컬럼 이름 검증 (SQL 인젝션 방지)
         const allowedColumns = [
             'page_name',
             'element_key',
