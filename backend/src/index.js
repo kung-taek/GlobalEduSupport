@@ -81,7 +81,7 @@ app.use(
     })
 );
 
-// Passport 초기화
+// Passport 초기화 
 app.use(passport.initialize());
 app.use(passport.session());
 
