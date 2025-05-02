@@ -291,16 +291,17 @@ app.get('/', async (req, res) => {
                         tbody.innerHTML = tableData.map(row => {
                             const cells = columnNames.map(col => {
                                 if (col === 'id') {
-                                    return \`<td>${row[col] || ''}</td>\`;
+                                    return \`<td>\${(row[col] || '').replace(/"/g, '&quot;')}</td>\`;
                                 }
+                                const safeValue = (row[col] || '').replace(/"/g, '&quot;');
                                 return \`
                                     <td>
                                         <div class="editable-cell"
                                              onclick="makeEditable(this)"
-                                             data-page-name="\${row.page_name}"
-                                             data-element-key="\${row.element_key}"
+                                             data-page-name="\${row.page_name.replace(/"/g, '&quot;')}"
+                                             data-element-key="\${row.element_key.replace(/"/g, '&quot;')}"
                                              data-column="\${col}"
-                                             data-original="\${row[col] || ''}">\${row[col] || ''}</div>
+                                             data-original="\${safeValue}">\${safeValue}</div>
                                     </td>
                                 \`;
                             }).join('');
@@ -309,7 +310,7 @@ app.get('/', async (req, res) => {
                                 <tr>
                                     \${cells}
                                     <td>
-                                        <button onclick="handleDelete('\${row.page_name}', '\${row.element_key}')" 
+                                        <button onclick="handleDelete('\${row.page_name.replace(/'/g, '\\\'')}', '\${row.element_key.replace(/'/g, '\\\'')}')" 
                                                 class="delete-btn">❌</button>
                                     </td>
                                 </tr>
