@@ -119,28 +119,28 @@ app.get('/', async (req, res) => {
     try {
         // 모든 컬럼 정보 가져오기
         const [columns] = await pool.query(
-            `SELECT COLUMN_NAME 
+            `
+            SELECT COLUMN_NAME 
             FROM INFORMATION_SCHEMA.COLUMNS 
             WHERE TABLE_NAME = 'ui_texts' 
-            AND TABLE_SCHEMA = ?`,
+            AND TABLE_SCHEMA = ?
+        `,
             [process.env.DB_NAME || 'AWS_DB']
         );
 
         // 모든 데이터 가져오기
         const [rows] = await pool.query('SELECT * FROM ui_texts');
 
-        // 데이터를 JSON 문자열로 안전하게 변환
-        const safeRowsJson = JSON.stringify(rows)
-            .replace(/</g, '\\u003c')
-            .replace(/>/g, '\\u003e')
-            .replace(/"/g, '\\"');
+        // HTML 테이블 생성
         const columnNames = columns.map((col) => col.COLUMN_NAME);
         const tableHeaders = columnNames.map((name) => `<th>${name}</th>`).join('');
 
+        // 데이터를 JSON 문자열로 안전하게 변환
+        const safeRowsJson = JSON.stringify(rows).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
+
         res.send(`
-            <h3>✅ 백엔드 서버 정상 가동!</h3>
-            
             <div id="auth-section">
+                <h3>✅ 백엔드 서버 정상 가동!</h3>
                 <input type="password" id="auth-password" placeholder="관리자 암호를 입력하세요">
                 <button onclick="authenticate()">확인</button>
             </div>
@@ -195,19 +195,40 @@ app.get('/', async (req, res) => {
                 </table>
 
                 <style>
-                    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-                    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                    th { background-color: #f2f2f2; }
-                    tr:nth-child(even) { background-color: #f9f9f9; }
-                    tr:hover { background-color: #f5f5f5; }
+                    /* 기존 테이블 스타일 */
+                    table {
+                        border-collapse: collapse;
+                        width: 100%;
+                        margin-top: 20px;
+                    }
+                    th, td {
+                        border: 1px solid #ddd;
+                        padding: 8px;
+                        text-align: left;
+                    }
+                    th {
+                        background-color: #f2f2f2;
+                    }
+                    tr:nth-child(even) {
+                        background-color: #f9f9f9;
+                    }
+                    tr:hover {
+                        background-color: #f5f5f5;
+                    }
+                    
+                    /* 수정된 편집 관련 스타일 */
                     .editable-cell {
                         min-height: 20px;
                         padding: 5px;
                         cursor: pointer;
                         position: relative;
                     }
-                    .editable-cell:hover { background-color: #f0f0f0; }
-                    .editable-cell.editing { padding: 0; }
+                    .editable-cell:hover {
+                        background-color: #f0f0f0;
+                    }
+                    .editable-cell.editing {
+                        padding: 0;
+                    }
                     .edit-input {
                         width: 100%;
                         padding: 5px;
@@ -238,41 +259,48 @@ app.get('/', async (req, res) => {
                         background-color: #4CAF50;
                         color: white;
                     }
-                    .save-btn:hover { background-color: #45a049; }
+                    .save-btn:hover {
+                        background-color: #45a049;
+                    }
                     .cancel-btn {
                         background-color: #f44336;
                         color: white;
                     }
-                    .cancel-btn:hover { background-color: #da190b; }
+                    .cancel-btn:hover {
+                        background-color: #da190b;
+                    }
                     .delete-btn {
                         background: none;
                         border: none;
                         color: red;
                         cursor: pointer;
                     }
-                    .delete-btn:hover { background-color: #ffebeb; }
+                    .delete-btn:hover {
+                        background-color: #ffebeb;
+                    }
                 </style>
 
                 <script>
+                    // 데이터를 전역 변수로 안전하게 저장
                     const tableData = ${safeRowsJson};
                     const columnNames = ${JSON.stringify(columnNames)};
 
+                    // 테이블 데이터 렌더링 함수
                     function renderTable() {
                         const tbody = document.getElementById('tableBody');
                         tbody.innerHTML = tableData.map(row => {
                             const cells = columnNames.map(col => {
                                 if (col === 'id') {
-                                    return \`<td>\${(row[col] || '').replace(/"/g, '&quot;')}</td>\`;
+                                    return \`<td>${row[col] || ''}</td>\`;
                                 }
-                                const safeValue = (row[col] || '').replace(/"/g, '&quot;');
                                 return \`
                                     <td>
                                         <div class="editable-cell"
                                              onclick="makeEditable(this)"
-                                             data-page-name="\${row.page_name.replace(/"/g, '&quot;')}"
-                                             data-element-key="\${row.element_key.replace(/"/g, '&quot;')}"
+                                             data-page-name="\${row.page_name}"
+                                             data-element-key="\${row.element_key}"
                                              data-column="\${col}"
-                                             data-original="\${safeValue}">\${safeValue}</div>
+                                             data-original="\${row[col] || ''}">\${row[col] || ''}</div>
                                     </td>
                                 \`;
                             }).join('');
@@ -281,7 +309,7 @@ app.get('/', async (req, res) => {
                                 <tr>
                                     \${cells}
                                     <td>
-                                        <button onclick="handleDelete('\${row.page_name.replace(/"/g, '&quot;')}', '\${row.element_key.replace(/"/g, '&quot;')}')" 
+                                        <button onclick="handleDelete('\${row.page_name}', '\${row.element_key}')" 
                                                 class="delete-btn">❌</button>
                                     </td>
                                 </tr>
@@ -289,12 +317,14 @@ app.get('/', async (req, res) => {
                         }).join('');
                     }
 
+                    // 초기 테이블 렌더링
                     renderTable();
 
                     function makeEditable(element) {
                         if (element.classList.contains('editing')) return;
                         
                         const originalText = element.getAttribute('data-original');
+                        const column = element.getAttribute('data-column');
                         element.classList.add('editing');
                         
                         const input = document.createElement('input');
@@ -365,12 +395,8 @@ app.get('/', async (req, res) => {
                     function cancelEdit(button) {
                         const cell = button.closest('.editable-cell');
                         const originalText = cell.getAttribute('data-original');
-                        
-                        // 편집 모드 클래스 제거
                         cell.classList.remove('editing');
-                        
-                        // 모든 내용을 원래 텍스트로 교체
-                        cell.innerHTML = originalText;
+                        cell.textContent = originalText;
                     }
 
                     // 페이지 로드 시 인증 상태 확인
@@ -476,22 +502,61 @@ app.post('/', async (req, res) => {
         } else {
             await pool.query(
                 `
-                UPDATE ui_texts SET original_text_ko = ? WHERE page_name = ? AND element_key = ?
+                UPDATE ui_texts 
+                SET original_text_ko = ?, 
+                    translated_text_ko = ? 
+                WHERE page_name = ? AND element_key = ?
             `,
-                [original_text_ko, page_name, element_key]
+                [original_text_ko, original_text_ko, page_name, element_key]
             );
             res.json({ success: true });
         }
     } catch (err) {
-        console.error('오류 발생:', err);
         res.status(500).json({ error: err.message });
     }
 });
 
-// 컬럼 업데이트 엔드포인트
+app.post('/update', async (req, res) => {
+    const { page_name, element_key, new_text_ko } = req.body;
+    try {
+        const [rows] = await pool.query('SELECT * FROM ui_texts WHERE page_name = ? AND element_key = ?', [
+            page_name,
+            element_key,
+        ]);
+        if (rows.length === 0) {
+            res.status(404).json({ error: '수정할 UI 텍스트를 찾을 수 없습니다.' });
+        } else {
+            await pool.query(
+                `
+                UPDATE ui_texts 
+                SET original_text_ko = ?, 
+                    translated_text_ko = ? 
+                WHERE page_name = ? AND element_key = ?
+            `,
+                [new_text_ko, new_text_ko, page_name, element_key]
+            );
+            res.json({ success: true });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/delete', async (req, res) => {
+    const { page_name, element_key } = req.body;
+    try {
+        await pool.query('DELETE FROM ui_texts WHERE page_name = ? AND element_key = ?', [page_name, element_key]);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 새로운 엔드포인트 추가
 app.post('/update-column', async (req, res) => {
     const { page_name, element_key, column, value } = req.body;
     try {
+        // 컬럼 이름 검증 (SQL 인젝션 방지)
         const allowedColumns = [
             'page_name',
             'element_key',
@@ -515,7 +580,19 @@ app.post('/update-column', async (req, res) => {
     }
 });
 
+// DB 연결 확인 후 서버 시작
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`✅ 서버 실행 중: http://0.0.0.0:${PORT}`);
-});
+
+(async () => {
+    try {
+        const connection = await pool.getConnection();
+        console.log('✅ MySQL 연결 성공!');
+        connection.release();
+
+        app.listen(PORT, '0.0.0.0', () => {
+            console.log(`✅ 서버 실행 중: http://0.0.0.0:${PORT}`);
+        });
+    } catch (err) {
+        console.error('❌ MySQL 연결 실패:', err.message);
+    }
+})();
