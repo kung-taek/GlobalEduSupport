@@ -312,6 +312,15 @@ app.get('/', async (req, res) => {
                     renderTable();
 
                     function makeEditable(element) {
+                        // 이미 편집 중인 다른 셀이 있다면 저장 처리
+                        const existingEditing = document.querySelector('.editable-cell.editing');
+                        if (existingEditing && existingEditing !== element) {
+                            const saveBtn = existingEditing.querySelector('.save-btn');
+                            if (saveBtn) {
+                                saveEdit(saveBtn);
+                            }
+                        }
+                        
                         if (element.classList.contains('editing')) return;
                         
                         const originalText = element.getAttribute('data-original');
@@ -342,55 +351,19 @@ app.get('/', async (req, res) => {
                         });
                     }
 
-                    async function saveEdit(button) {
-                        const cell = button.closest('.editable-cell');
-                        const input = cell.querySelector('input');
-                        const newText = input.value.trim();
-                        const pageName = cell.getAttribute('data-page-name');
-                        const elementKey = cell.getAttribute('data-element-key');
-                        const column = cell.getAttribute('data-column');
-                        
-                        if (!newText) {
-                            alert('내용을 입력해주세요.');
-                            return;
-                        }
-
-                        try {
-                            const response = await fetch('/update-column', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({
-                                    page_name: pageName,
-                                    element_key: elementKey,
-                                    column: column,
-                                    value: newText
-                                })
-                            });
-                            
-                            if (response.ok) {
-                                window.location.reload();
-                            } else {
-                                const errorData = await response.json();
-                                alert(errorData.error || '수정 중 오류가 발생했습니다.');
-                                cancelEdit(button);
-                            }
-                        } catch (error) {
-                            alert('오류가 발생했습니다: ' + error.message);
-                            cancelEdit(button);
-                        }
-                    }
-
                     function cancelEdit(button) {
                         const cell = button.closest('.editable-cell');
+                        const input = cell.querySelector('input');
                         const originalText = cell.getAttribute('data-original');
                         
                         // 편집 모드 클래스 제거
                         cell.classList.remove('editing');
                         
-                        // 모든 내용을 원래 텍스트로 교체
+                        // 원래 텍스트로 복원
                         cell.textContent = originalText;
+                        
+                        // 저장 함수 호출
+                        saveEdit(button);
                     }
 
                     document.addEventListener('DOMContentLoaded', function() {
