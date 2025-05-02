@@ -385,7 +385,11 @@ app.get('/', async (req, res) => {
                     function cancelEdit(button) {
                         const cell = button.closest('.editable-cell');
                         const originalText = cell.getAttribute('data-original');
+                        
+                        // 편집 모드 클래스 제거
                         cell.classList.remove('editing');
+                        
+                        // 모든 내용을 원래 텍스트로 교체
                         cell.innerHTML = originalText;
                     }
 
