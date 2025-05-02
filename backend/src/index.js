@@ -164,24 +164,6 @@ app.get('/', async (req, res) => {
                 </form>
 
                 <hr>
-                <h2>원문 수정</h2>
-                <form id="updateForm" onsubmit="handleSubmit(event, 'update')" class="admin-form">
-                    <div class="form-group">
-                        <label>페이지 이름(page_name):</label>
-                        <input name="page_name" required>
-                    </div>
-                    <div class="form-group">
-                        <label>엘리먼트 키(element_key):</label>
-                        <input name="element_key" required>
-                    </div>
-                    <div class="form-group">
-                        <label>새로운 한글 원문(new_text_ko):</label>
-                        <input name="new_text_ko" required>
-                    </div>
-                    <button type="submit">텍스트 수정</button>
-                </form>
-
-                <hr>
                 <h2>데이터베이스 현재 상태</h2>
                 <table>
                     <thead>
@@ -213,6 +195,58 @@ app.get('/', async (req, res) => {
                     }
                     tr:hover {
                         background-color: #f5f5f5;
+                    }
+                    .editable-cell {
+                        min-height: 20px;
+                        padding: 5px;
+                        cursor: pointer;
+                        position: relative;
+                    }
+                    .editable-cell:hover {
+                        background-color: #f0f0f0;
+                    }
+                    .editable-cell.editing {
+                        padding: 0;
+                    }
+                    .edit-input {
+                        width: 100%;
+                        padding: 5px;
+                        box-sizing: border-box;
+                        border: 2px solid #4CAF50;
+                        border-radius: 4px;
+                    }
+                    .edit-controls {
+                        position: absolute;
+                        right: 0;
+                        top: 100%;
+                        background: white;
+                        border: 1px solid #ddd;
+                        border-radius: 4px;
+                        padding: 5px;
+                        z-index: 100;
+                        display: flex;
+                        gap: 5px;
+                        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                    }
+                    .edit-controls button {
+                        padding: 3px 8px;
+                        cursor: pointer;
+                        border: none;
+                        border-radius: 3px;
+                    }
+                    .save-btn {
+                        background-color: #4CAF50;
+                        color: white;
+                    }
+                    .save-btn:hover {
+                        background-color: #45a049;
+                    }
+                    .cancel-btn {
+                        background-color: #f44336;
+                        color: white;
+                    }
+                    .cancel-btn:hover {
+                        background-color: #da190b;
                     }
                     .delete-btn {
                         background: none;
@@ -247,14 +281,27 @@ app.get('/', async (req, res) => {
                         const tbody = document.getElementById('tableBody');
                         tbody.innerHTML = tableData.map(row => {
                             const cells = columnNames.map(col => {
-                                return \`<td>\${row[col] || ''}</td>\`;
+                                if (col === 'id') {
+                                    return \`<td>\${row[col] || ''}</td>\`;
+                                }
+                                const safeValue = (row[col] || '').replace(/"/g, '&quot;');
+                                return \`
+                                    <td>
+                                        <div class="editable-cell"
+                                             onclick="makeEditable(this)"
+                                             data-page-name="\${row.page_name.replace(/"/g, '&quot;')}"
+                                             data-element-key="\${row.element_key.replace(/"/g, '&quot;')}"
+                                             data-column="\${col}"
+                                             data-original="\${safeValue}">\${safeValue}</div>
+                                    </td>
+                                \`;
                             }).join('');
 
                             return \`
                                 <tr>
                                     \${cells}
                                     <td>
-                                        <button onclick="handleDelete('\${row.page_name}', '\${row.element_key}')" 
+                                        <button onclick="handleDelete('\${row.page_name.replace(/'/g, '\\\'')}', '\${row.element_key.replace(/'/g, '\\\'')}')" 
                                                 class="delete-btn">❌</button>
                                     </td>
                                 </tr>
@@ -263,6 +310,84 @@ app.get('/', async (req, res) => {
                     }
 
                     renderTable();
+
+                    function makeEditable(element) {
+                        if (element.classList.contains('editing')) return;
+                        
+                        const originalText = element.getAttribute('data-original');
+                        element.classList.add('editing');
+                        
+                        const input = document.createElement('input');
+                        input.value = originalText;
+                        input.className = 'edit-input';
+                        
+                        const controls = document.createElement('div');
+                        controls.className = 'edit-controls';
+                        controls.innerHTML = \`
+                            <button class="save-btn" onclick="saveEdit(this)">저장</button>
+                            <button class="cancel-btn" onclick="cancelEdit(this)">취소</button>
+                        \`;
+                        
+                        element.innerHTML = '';
+                        element.appendChild(input);
+                        element.appendChild(controls);
+                        input.focus();
+
+                        input.addEventListener('keydown', function(e) {
+                            if (e.key === 'Enter') {
+                                saveEdit(controls.querySelector('.save-btn'));
+                            } else if (e.key === 'Escape') {
+                                cancelEdit(controls.querySelector('.cancel-btn'));
+                            }
+                        });
+                    }
+
+                    async function saveEdit(button) {
+                        const cell = button.closest('.editable-cell');
+                        const input = cell.querySelector('input');
+                        const newText = input.value.trim();
+                        const pageName = cell.getAttribute('data-page-name');
+                        const elementKey = cell.getAttribute('data-element-key');
+                        const column = cell.getAttribute('data-column');
+                        
+                        if (!newText) {
+                            alert('내용을 입력해주세요.');
+                            return;
+                        }
+
+                        try {
+                            const response = await fetch('/update-column', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    page_name: pageName,
+                                    element_key: elementKey,
+                                    column: column,
+                                    value: newText
+                                })
+                            });
+                            
+                            if (response.ok) {
+                                window.location.reload();
+                            } else {
+                                const errorData = await response.json();
+                                alert(errorData.error || '수정 중 오류가 발생했습니다.');
+                                cancelEdit(button);
+                            }
+                        } catch (error) {
+                            alert('오류가 발생했습니다: ' + error.message);
+                            cancelEdit(button);
+                        }
+                    }
+
+                    function cancelEdit(button) {
+                        const cell = button.closest('.editable-cell');
+                        const originalText = cell.getAttribute('data-original');
+                        cell.classList.remove('editing');
+                        cell.innerHTML = originalText;
+                    }
 
                     document.addEventListener('DOMContentLoaded', function() {
                         const isAuthenticated = localStorage.getItem('isAuthenticated');
@@ -293,7 +418,7 @@ app.get('/', async (req, res) => {
                         const data = Object.fromEntries(formData.entries());
                         
                         try {
-                            const response = await fetch(type === 'add' ? '/' : '/update', {
+                            const response = await fetch('/', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
