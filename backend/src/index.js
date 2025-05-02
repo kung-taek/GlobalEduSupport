@@ -263,8 +263,8 @@ app.get('/', async (req, res) => {
                                 }
                                 return \`
                                     <td>
-                                        <div class="editable-cell"
-                                             onclick="makeEditable(this)"
+                                        <div class='editable-cell'
+                                             onclick='makeEditable(this)'
                                              data-page-name="\${row.page_name}"
                                              data-element-key="\${row.element_key}"
                                              data-column="\${col}"
