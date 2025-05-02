@@ -195,7 +195,6 @@ app.get('/', async (req, res) => {
                 </table>
 
                 <style>
-                    /* 기존 테이블 스타일 */
                     table {
                         border-collapse: collapse;
                         width: 100%;
@@ -215,60 +214,6 @@ app.get('/', async (req, res) => {
                     tr:hover {
                         background-color: #f5f5f5;
                     }
-                    
-                    /* 수정된 편집 관련 스타일 */
-                    .editable-cell {
-                        min-height: 20px;
-                        padding: 5px;
-                        cursor: pointer;
-                        position: relative;
-                    }
-                    .editable-cell:hover {
-                        background-color: #f0f0f0;
-                    }
-                    .editable-cell.editing {
-                        padding: 0;
-                    }
-                    .edit-input {
-                        width: 100%;
-                        padding: 5px;
-                        box-sizing: border-box;
-                        border: 2px solid #4CAF50;
-                        border-radius: 4px;
-                    }
-                    .edit-controls {
-                        position: absolute;
-                        right: 0;
-                        top: 100%;
-                        background: white;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                        padding: 5px;
-                        z-index: 100;
-                        display: flex;
-                        gap: 5px;
-                        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-                    }
-                    .edit-controls button {
-                        padding: 3px 8px;
-                        cursor: pointer;
-                        border: none;
-                        border-radius: 3px;
-                    }
-                    .save-btn {
-                        background-color: #4CAF50;
-                        color: white;
-                    }
-                    .save-btn:hover {
-                        background-color: #45a049;
-                    }
-                    .cancel-btn {
-                        background-color: #f44336;
-                        color: white;
-                    }
-                    .cancel-btn:hover {
-                        background-color: #da190b;
-                    }
                     .delete-btn {
                         background: none;
                         border: none;
@@ -278,39 +223,38 @@ app.get('/', async (req, res) => {
                     .delete-btn:hover {
                         background-color: #ffebeb;
                     }
+                    .admin-form {
+                        margin: 20px 0;
+                    }
+                    .form-group {
+                        margin-bottom: 10px;
+                    }
+                    .form-group label {
+                        display: inline-block;
+                        width: 200px;
+                    }
+                    .form-group input {
+                        width: 300px;
+                        padding: 5px;
+                    }
                 </style>
 
                 <script>
-                    // 데이터를 전역 변수로 안전하게 저장
                     const tableData = ${safeRowsJson};
                     const columnNames = ${JSON.stringify(columnNames)};
 
-                    // 테이블 데이터 렌더링 함수
                     function renderTable() {
                         const tbody = document.getElementById('tableBody');
                         tbody.innerHTML = tableData.map(row => {
                             const cells = columnNames.map(col => {
-                                if (col === 'id') {
-                                    return \`<td>\${(row[col] || '').replace(/"/g, '&quot;')}</td>\`;
-                                }
-                                const safeValue = (row[col] || '').replace(/"/g, '&quot;');
-                                return \`
-                                    <td>
-                                        <div class="editable-cell"
-                                             onclick="makeEditable(this)"
-                                             data-page-name="\${row.page_name.replace(/"/g, '&quot;')}"
-                                             data-element-key="\${row.element_key.replace(/"/g, '&quot;')}"
-                                             data-column="\${col}"
-                                             data-original="\${safeValue}">\${safeValue}</div>
-                                    </td>
-                                \`;
+                                return \`<td>\${row[col] || ''}</td>\`;
                             }).join('');
 
                             return \`
                                 <tr>
                                     \${cells}
                                     <td>
-                                        <button onclick="handleDelete('\${row.page_name.replace(/'/g, '\\\'')}', '\${row.element_key.replace(/'/g, '\\\'')}')" 
+                                        <button onclick="handleDelete('\${row.page_name}', '\${row.element_key}')" 
                                                 class="delete-btn">❌</button>
                                     </td>
                                 </tr>
@@ -318,89 +262,8 @@ app.get('/', async (req, res) => {
                         }).join('');
                     }
 
-                    // 초기 테이블 렌더링
                     renderTable();
 
-                    function makeEditable(element) {
-                        if (element.classList.contains('editing')) return;
-                        
-                        const originalText = element.getAttribute('data-original');
-                        const column = element.getAttribute('data-column');
-                        element.classList.add('editing');
-                        
-                        const input = document.createElement('input');
-                        input.value = originalText;
-                        input.className = 'edit-input';
-                        
-                        const controls = document.createElement('div');
-                        controls.className = 'edit-controls';
-                        controls.innerHTML = \`
-                            <button class="save-btn" onclick="saveEdit(this)">저장</button>
-                            <button class="cancel-btn" onclick="cancelEdit(this)">취소</button>
-                        \`;
-                        
-                        element.innerHTML = '';
-                        element.appendChild(input);
-                        element.appendChild(controls);
-                        input.focus();
-
-                        input.addEventListener('keydown', function(e) {
-                            if (e.key === 'Enter') {
-                                saveEdit(controls.querySelector('.save-btn'));
-                            } else if (e.key === 'Escape') {
-                                cancelEdit(controls.querySelector('.cancel-btn'));
-                            }
-                        });
-                    }
-
-                    async function saveEdit(button) {
-                        const cell = button.closest('.editable-cell');
-                        const input = cell.querySelector('input');
-                        const newText = input.value.trim();
-                        const pageName = cell.getAttribute('data-page-name');
-                        const elementKey = cell.getAttribute('data-element-key');
-                        const column = cell.getAttribute('data-column');
-                        
-                        if (!newText) {
-                            alert('내용을 입력해주세요.');
-                            return;
-                        }
-
-                        try {
-                            const response = await fetch('/update-column', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({
-                                    page_name: pageName,
-                                    element_key: elementKey,
-                                    column: column,
-                                    value: newText
-                                })
-                            });
-                            
-                            if (response.ok) {
-                                window.location.reload();
-                            } else {
-                                const errorData = await response.json();
-                                alert(errorData.error || '수정 중 오류가 발생했습니다.');
-                                cancelEdit(button);
-                            }
-                        } catch (error) {
-                            alert('오류가 발생했습니다: ' + error.message);
-                            cancelEdit(button);
-                        }
-                    }
-
-                    function cancelEdit(button) {
-                        const cell = button.closest('.editable-cell');
-                        const originalText = cell.getAttribute('data-original');
-                        cell.classList.remove('editing');
-                        cell.textContent = originalText;
-                    }
-
-                    // 페이지 로드 시 인증 상태 확인
                     document.addEventListener('DOMContentLoaded', function() {
                         const isAuthenticated = localStorage.getItem('isAuthenticated');
                         if (isAuthenticated === 'true') {
