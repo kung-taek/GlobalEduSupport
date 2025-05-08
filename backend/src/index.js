@@ -592,14 +592,18 @@ app.post('/delete', async (req, res) => {
 app.post('/update-column', async (req, res) => {
     const { page_name, element_key, column, value } = req.body;
     try {
-        // 컬럼 이름 검증 (SQL 인젝션 방지)
-        const allowedColumns = [
-            'page_name',
-            'element_key',
-            'original_text_ko',
-            'translated_text_ko',
-            'translated_text_en',
-        ];
+        // 데이터베이스에서 컬럼 정보를 동적으로 가져옴
+        const [columns] = await pool.query(
+            `SELECT COLUMN_NAME 
+            FROM INFORMATION_SCHEMA.COLUMNS 
+            WHERE TABLE_NAME = 'ui_texts' 
+            AND TABLE_SCHEMA = ?`,
+            [process.env.DB_NAME || 'AWS_DB']
+        );
+
+        // id를 제외한 모든 컬럼을 허용
+        const allowedColumns = columns.map((col) => col.COLUMN_NAME).filter((colName) => colName !== 'id');
+
         if (!allowedColumns.includes(column)) {
             return res.status(400).json({ error: '유효하지 않은 컬럼입니다.' });
         }
