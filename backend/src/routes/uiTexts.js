@@ -10,9 +10,25 @@ const allowedOrigins = [
     'http://globalhelper.p-e.kr',
     'http://globalhelper.p-e.kr:5000',
     'https://globalhelper.p-e.kr',
-    'http://localhost:5173',
+    'http://localhost:5173', // Vite 기본 포트
     'http://localhost:3000',
+    'http://127.0.0.1:5173', // Vite 대체 포트
+    'http://127.0.0.1:3000',
 ];
+
+router.use(
+    cors({
+        origin: function (origin, callback) {
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                console.log('Blocked by CORS:', origin);
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
+        credentials: true,
+    })
+);
 
 router.get('/', async (req, res) => {
     try {
@@ -25,33 +41,37 @@ router.get('/', async (req, res) => {
         }
 
         const [rows] = await pool.query(
-            `SELECT element_key, original_text_ko, ${langCol} FROM ui_texts WHERE page_name = ?`,
+            `SELECT page_name, element_key, original_text_ko, ${langCol} FROM ui_texts WHERE page_name = ?`,
             [page]
         );
 
-        const translations = {};
-        for (const row of rows) {
-            let text = row[langCol];
-            if (!text && lang !== 'ko') {
-                const translated = await translateText(row.original_text_ko, 'ko', lang);
-                if (translated) {
-                    await pool.query(`UPDATE ui_texts SET ${langCol} = ? WHERE page_name = ? AND element_key = ?`, [
-                        translated,
-                        page,
-                        row.element_key,
-                    ]);
-                    text = translated;
-                } else {
-                    text = row.original_text_ko;
+        const processedRows = await Promise.all(
+            rows.map(async (row) => {
+                let translatedText = row[langCol];
+                if (!translatedText && lang !== 'ko') {
+                    const translated = await translateText(row.original_text_ko, 'ko', lang);
+                    if (translated) {
+                        await pool.query(`UPDATE ui_texts SET ${langCol} = ? WHERE page_name = ? AND element_key = ?`, [
+                            translated,
+                            page,
+                            row.element_key,
+                        ]);
+                        translatedText = translated;
+                    } else {
+                        translatedText = row.original_text_ko;
+                    }
+                } else if (!translatedText && lang === 'ko') {
+                    translatedText = row.original_text_ko;
                 }
-            } else if (!text && lang === 'ko') {
-                text = row.original_text_ko;
-            }
 
-            translations[row.element_key] = text;
-        }
+                return {
+                    ...row,
+                    [langCol]: translatedText,
+                };
+            })
+        );
 
-        res.json(translations);
+        res.json(processedRows);
     } catch (err) {
         console.error('UI 텍스트 API 오류:', err);
         res.status(500).json({ error: err.message || '서버 오류' });

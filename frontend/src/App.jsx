@@ -4,6 +4,7 @@ import KakaoMap from './components/KakaoMap';
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import Login from './pages/Login';
 import AuthCallback from './pages/AuthCallback';
+import { useTranslation } from 'react-i18next';
 
 function App() {
     const [input, setInput] = useState('');
@@ -17,6 +18,7 @@ function App() {
     const [isLoading, setIsLoading] = useState(false);
     const [lang, setLang] = useState('ko');
     const [translations, setTranslations] = useState({});
+    const { texts } = useTranslation();
 
     useEffect(() => {
         fetch(`/api/ui-texts?lang=${lang}&page=test`, {
