@@ -163,7 +163,7 @@ app.get('/', async (req, res) => {
                     <button type="submit">값 적용</button>
                 </form>
 
-                <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center;">
                     <h2 style="margin: 0;">데이터베이스 현재 상태</h2>
                     <div>
                         <input id="searchPageName" type="text" placeholder="page_name 검색" style="padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
