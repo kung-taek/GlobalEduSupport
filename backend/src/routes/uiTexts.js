@@ -111,4 +111,26 @@ router.post('/translate-test', async (req, res) => {
     }
 });
 
+router.post('/translate-all', async (req, res) => {
+    const targetLangs = ['en', 'ja', 'vi', 'mn', 'zh', 'ru', 'fr', 'es', 'ar'];
+    try {
+        const [rows] = await pool.query('SELECT * FROM ui_texts');
+        for (const row of rows) {
+            for (const lang of targetLangs) {
+                const col = `translated_text_${lang}`;
+                await ensureLangColumn(lang);
+                if (!row[col]) {
+                    const translated = await translateText(row.original_text_ko, 'ko', lang);
+                    if (translated) {
+                        await pool.query(`UPDATE ui_texts SET ${col} = ? WHERE id = ?`, [translated, row.id]);
+                    }
+                }
+            }
+        }
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 export default router;
