@@ -60,6 +60,30 @@ const LangOption = styled.button<{ active: boolean }>`
   }
 `;
 
+
+
+/*
+ko: 한국어 (Korean)
+
+en: English (영어)
+
+ja: 日本語 (Japanese, 일본어)
+
+vi: Tiếng Việt (Vietnamese, 베트남어)
+
+mn: Монгол (Mongolian, 몽골어)
+
+zh: 中文 (Chinese, 중국어)
+
+ru: Русский (Russian, 러시아어)
+
+fr: Français (French, 프랑스어)
+
+es: Español (Spanish, 스페인어)
+
+ar: العربية (Arabic, 아랍어)
+*/
+
 const languages = [
   { code: 'ko', name: '한국어' },
   { code: 'en', name: 'English' },

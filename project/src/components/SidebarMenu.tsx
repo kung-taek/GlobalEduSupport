@@ -1,6 +1,11 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useTranslation } from '../contexts/TranslationContext';
+import { LanguageSelector } from '../components/LanguageSelector';
+
+
+
+
 
 interface MenuItem {
     id: string;
@@ -59,6 +64,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ onCategorySelect }) => {
                     </MenuItemStyled>
                 ))}
             </MenuList>
+            <LanguageSelector />
         </SidebarContainer>
     );
 };

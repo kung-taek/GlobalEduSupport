@@ -6,6 +6,7 @@ import SidebarMenu from './components/SidebarMenu';
 import PlaceInfoPanel from './components/PlaceInfoPanel';
 import KCulturePage from './pages/KCulturePage';
 import { TranslationProvider, useTranslation } from './contexts/TranslationContext';
+import { LanguageSelector } from './components/LanguageSelector';
 
 interface Place {
     place_name: string;
@@ -149,6 +150,7 @@ const App: React.FC = () => {
                 ></span>
             </MenuIcon>
             {isMenuOpen && <SidebarMenu onCategorySelect={handleCategorySelect} />}
+            
             <Routes>
                 <Route
                     path="/"

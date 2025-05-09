@@ -163,8 +163,14 @@ app.get('/', async (req, res) => {
                     <button type="submit">값 적용</button>
                 </form>
 
-                <hr>
-                <h2>데이터베이스 현재 상태</h2>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <h2 style="margin: 0;">데이터베이스 현재 상태</h2>
+                    <div>
+                        <input id="searchPageName" type="text" placeholder="page_name 검색" style="padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
+                        <button onclick="filterByPageName()" style="padding: 6px 12px; margin-left: 4px;">검색</button>
+                        <button onclick="resetFilter()" style="padding: 6px 12px; margin-left: 4px;">초기화</button>
+                    </div>
+                </div>
                 <table>
                     <thead>
                         <tr>
@@ -277,9 +283,9 @@ app.get('/', async (req, res) => {
                     const tableData = ${safeRowsJson};
                     const columnNames = ${JSON.stringify(columnNames)};
 
-                    function renderTable() {
+                    function renderTable(data = tableData) {
                         const tbody = document.getElementById('tableBody');
-                        tbody.innerHTML = tableData.map(row => {
+                        tbody.innerHTML = data.map(row => {
                             const cells = columnNames.map(col => {
                                 if (col === 'id') {
                                     return \`<td>\${row[col] || ''}</td>\`;
@@ -508,6 +514,21 @@ app.get('/', async (req, res) => {
                         } catch (error) {
                             alert('오류가 발생했습니다: ' + error.message);
                         }
+                    }
+
+                    function filterByPageName() {
+                        const searchValue = document.getElementById('searchPageName').value.trim();
+                        if (!searchValue) {
+                            renderTable();
+                            return;
+                        }
+                        const filtered = tableData.filter(row => row.page_name && row.page_name.includes(searchValue));
+                        renderTable(filtered);
+                    }
+
+                    function resetFilter() {
+                        document.getElementById('searchPageName').value = '';
+                        renderTable();
                     }
                 </script>
             </div>
