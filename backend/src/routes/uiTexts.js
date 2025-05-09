@@ -45,10 +45,10 @@ router.get('/', async (req, res) => {
             [page]
         );
 
-        const processedRows = await Promise.all(
-            rows.map(async (row) => {
-                let translatedText = row[langCol];
-                if (!translatedText && lang !== 'ko') {
+        const hasEmpty = rows.some((row) => !row[langCol]);
+        if (hasEmpty && lang !== 'ko') {
+            for (const row of rows) {
+                if (!row[langCol]) {
                     const translated = await translateText(row.original_text_ko, 'ko', lang);
                     if (translated) {
                         await pool.query(`UPDATE ui_texts SET ${langCol} = ? WHERE page_name = ? AND element_key = ?`, [
@@ -56,22 +56,21 @@ router.get('/', async (req, res) => {
                             page,
                             row.element_key,
                         ]);
-                        translatedText = translated;
+                        row[langCol] = translated;
                     } else {
-                        translatedText = row.original_text_ko;
+                        row[langCol] = row.original_text_ko;
                     }
-                } else if (!translatedText && lang === 'ko') {
-                    translatedText = row.original_text_ko;
                 }
+            }
+        } else {
+            for (const row of rows) {
+                if (!row[langCol] && lang === 'ko') {
+                    row[langCol] = row.original_text_ko;
+                }
+            }
+        }
 
-                return {
-                    ...row,
-                    [langCol]: translatedText,
-                };
-            })
-        );
-
-        res.json(processedRows);
+        res.json(rows);
     } catch (err) {
         console.error('UI 텍스트 API 오류:', err);
         res.status(500).json({ error: err.message || '서버 오류' });
