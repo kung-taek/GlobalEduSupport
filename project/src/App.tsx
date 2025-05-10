@@ -4,7 +4,7 @@ import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import KakaoMap from './components/KakaoMap';
 import SidebarMenu from './components/SidebarMenu';
 import PlaceInfoPanel from './components/PlaceInfoPanel';
-import KCulturePage from './pages/KCulturePage';
+import KCulturePageContent from './pages/KCulturePage';
 import { TranslationProvider, useTranslation } from './contexts/TranslationContext';
 import { LanguageSelector } from './components/LanguageSelector';
 
@@ -115,64 +115,75 @@ const App: React.FC = () => {
         setKeyword(search);
     };
 
+    // 라우트에 따라 pageName 결정
+    const getPageName = () => {
+        if (location.pathname === '/kculture') return 'kculture';
+        // 필요시 다른 라우트도 추가
+        return 'main';
+    };
+
     return (
-        <AppContainer>
-            <MenuIcon onClick={handleMenuIconClick} sidebar={isMenuOpen}>
-                <span
-                    style={{
-                        display: 'block',
-                        width: 24,
-                        height: 3,
-                        background: '#222',
-                        margin: '5px 0',
-                        borderRadius: 2,
-                    }}
-                ></span>
-                <span
-                    style={{
-                        display: 'block',
-                        width: 24,
-                        height: 3,
-                        background: '#222',
-                        margin: '5px 0',
-                        borderRadius: 2,
-                    }}
-                ></span>
-                <span
-                    style={{
-                        display: 'block',
-                        width: 24,
-                        height: 3,
-                        background: '#222',
-                        margin: '5px 0',
-                        borderRadius: 2,
-                    }}
-                ></span>
-            </MenuIcon>
-            {isMenuOpen && <SidebarMenu onCategorySelect={handleCategorySelect} />}
-            
-            <Routes>
-                <Route
-                    path="/"
-                    element={
-                        <MapContainer>
-                            <SearchBoxWrapper>
-                                <SearchInput
-                                    type="text"
-                                    placeholder={texts['search_placeholder'] || '출발지점 - 도착지점'}
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                                />
-                            </SearchBoxWrapper>
-                            <KakaoMap />
-                        </MapContainer>
-                    }
-                />
-                <Route path="/kculture" element={<KCulturePage />} />
-            </Routes>
-            {location.pathname === '/' && <PlaceInfoPanel selectedPlace={selectedPlace} recentPlaces={recentPlaces} />}
-        </AppContainer>
+        <TranslationProvider key={getPageName()} pageName={getPageName()}>
+            <AppContainer>
+                <MenuIcon onClick={handleMenuIconClick} sidebar={isMenuOpen}>
+                    <span
+                        style={{
+                            display: 'block',
+                            width: 24,
+                            height: 3,
+                            background: '#222',
+                            margin: '5px 0',
+                            borderRadius: 2,
+                        }}
+                    ></span>
+                    <span
+                        style={{
+                            display: 'block',
+                            width: 24,
+                            height: 3,
+                            background: '#222',
+                            margin: '5px 0',
+                            borderRadius: 2,
+                        }}
+                    ></span>
+                    <span
+                        style={{
+                            display: 'block',
+                            width: 24,
+                            height: 3,
+                            background: '#222',
+                            margin: '5px 0',
+                            borderRadius: 2,
+                        }}
+                    ></span>
+                </MenuIcon>
+                {isMenuOpen && <SidebarMenu onCategorySelect={handleCategorySelect} />}
+
+                <Routes>
+                    <Route
+                        path="/"
+                        element={
+                            <MapContainer>
+                                <SearchBoxWrapper>
+                                    <SearchInput
+                                        type="text"
+                                        placeholder={texts['search_placeholder'] || '출발지점 - 도착지점'}
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                                    />
+                                </SearchBoxWrapper>
+                                <KakaoMap />
+                            </MapContainer>
+                        }
+                    />
+                    <Route path="/kculture" element={<KCulturePageContent />} />
+                </Routes>
+                {location.pathname === '/' && (
+                    <PlaceInfoPanel selectedPlace={selectedPlace} recentPlaces={recentPlaces} />
+                )}
+            </AppContainer>
+        </TranslationProvider>
     );
 };
 

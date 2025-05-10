@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { TranslationProvider, useTranslation } from '../contexts/TranslationContext';
+import { useTranslation } from '../contexts/TranslationContext';
 
 const Container = styled.div`
     padding: 24px 16px;
@@ -107,13 +107,4 @@ const KCulturePageContent: React.FC = () => {
     );
 };
 
-// 메인 KCulturePage 컴포넌트
-const KCulturePage: React.FC = () => {
-    return (
-        <TranslationProvider pageName="kculture">
-            <KCulturePageContent />
-        </TranslationProvider>
-    );
-};
-
-export default KCulturePage;
+export default KCulturePageContent;

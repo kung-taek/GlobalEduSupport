@@ -40,84 +40,52 @@ router.get('/', async (req, res) => {
             await ensureLangColumn(lang);
         }
 
-        // 모든 page_name에 대해 번역 수행
-        const [rows] = await pool.query(`SELECT page_name, element_key, original_text_ko, ${langCol} FROM ui_texts`);
+        // 요청된 page_name의 데이터만 가져오기
+        const [rows] = await pool.query(
+            `SELECT page_name, element_key, original_text_ko, ${langCol} FROM ui_texts WHERE page_name = ?`,
+            [page]
+        );
 
-        const translations = {};
+        console.log(`Fetching translations for page: ${page}, lang: ${lang}`); // 디버깅용 로그
+        console.log('Initial rows:', rows); // 디버깅용 로그
+
+        const translations = [];
 
         for (const row of rows) {
             let text = row[langCol];
 
             if (!text && lang !== 'ko') {
+                console.log(`Translating text for ${row.element_key}`); // 디버깅용 로그
                 const translated = await translateText(row.original_text_ko, 'ko', lang);
                 if (translated) {
                     await pool.query(`UPDATE ui_texts SET ${langCol} = ? WHERE page_name = ? AND element_key = ?`, [
                         translated,
-                        row.page_name,
+                        page,
                         row.element_key,
                     ]);
                     text = translated;
+                    console.log(`Translated ${row.element_key}:`, translated); // 디버깅용 로그
                 } else {
                     text = row.original_text_ko;
+                    console.log(`Translation failed for ${row.element_key}, using original`); // 디버깅용 로그
                 }
             } else if (!text && lang === 'ko') {
                 text = row.original_text_ko;
             }
 
-            if (!translations[row.page_name]) {
-                translations[row.page_name] = {};
-            }
-
-            translations[row.page_name][row.element_key] = text;
-        }
-
-        // 요청된 page_name의 번역만 반환
-        const requestedTranslations = translations[page] || {};
-        res.json(
-            Object.entries(requestedTranslations).map(([element_key, text]) => ({
+            translations.push({
                 page_name: page,
-                element_key,
-                original_text_ko: rows.find((r) => r.page_name === page && r.element_key === element_key)
-                    ?.original_text_ko,
+                element_key: row.element_key,
+                original_text_ko: row.original_text_ko,
                 [langCol]: text,
-            }))
-        );
-    } catch (err) {
-        console.error('UI 텍스트 API 오류:', err);
-        res.status(500).json({ error: err.message || '서버 오류' });
-    }
-});
-
-// 번역 테스트용 엔드포인트 추가
-router.post('/translate-test', async (req, res) => {
-    try {
-        const { text, from = 'ko', to = 'en' } = req.body;
-
-        if (!text) {
-            return res.status(400).json({ error: '번역할 텍스트를 입력해주세요.' });
-        }
-
-        const translated = await translateText(text, from, to);
-
-        if (translated === null) {
-            return res.status(500).json({
-                error: '번역 실패',
-                details: '번역 API 호출 중 오류가 발생했습니다.',
             });
         }
 
-        res.json({
-            original: text,
-            translated,
-            from,
-            to,
-        });
+        console.log('Final translations:', translations); // 디버깅용 로그
+        res.json(translations);
     } catch (err) {
-        console.error('번역 테스트 오류:', err);
-        res.status(500).json({
-            error: '서버 오류',
-            message: err.message,
-        });
+        console.error('UI 텍스트 API 오류:', err);
+        res.status(500).json({ error: err.message || '서버 오류' });
     }
 });
 
