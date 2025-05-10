@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import KakaoMap from './components/KakaoMap';
@@ -78,7 +78,7 @@ const App: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const { texts, isLoading } = useTranslation();
+    const { texts, isLoading, currentLang } = useTranslation();
 
     console.log('Current texts:', texts);
     console.log('Is loading:', isLoading);
@@ -167,7 +167,9 @@ const App: React.FC = () => {
                                 <SearchBoxWrapper>
                                     <SearchInput
                                         type="text"
-                                        placeholder={texts['search_placeholder'] || '출발지점 - 도착지점'}
+                                        placeholder={
+                                            isLoading ? '' : texts['search_placeholder'] || '출발지점 - 도착지점'
+                                        }
                                         value={search}
                                         onChange={(e) => setSearch(e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && handleSearch()}

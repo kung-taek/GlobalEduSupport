@@ -38,7 +38,7 @@ const KakaoMap: React.FC = () => {
     // 30초 후에도 로드되지 않으면 에러 처리
     const timeout = setTimeout(() => {
       if (!window.kakao || !window.kakao.maps) {
-        setError('카카오맵을 불러오는데 실패했습니다. 페이지를 새로고침 해주세요.');
+        setError('카카오맵을 불러오는 데 실패했습니다. 페이지를 새로고침 해주세요.');
         clearInterval(checkKakao);
       }
     }, 30000);

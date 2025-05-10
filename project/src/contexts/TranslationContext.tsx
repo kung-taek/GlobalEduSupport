@@ -3,6 +3,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { UIText, Language } from '../types/translation';
 import { fetchUITexts } from '../services/api';
 
+const LANGUAGE_STORAGE_KEY = 'globalhelper_lang';
+
 interface TranslationContextType {
     texts: Record<string, string>;
     currentLang: Language;
@@ -16,11 +18,20 @@ export const TranslationProvider: React.FC<{ children: React.ReactNode; pageName
     children,
     pageName,
 }) => {
+    // localStorage에서 언어를 읽어오고, 없으면 'ko'로 초기화
+    const getInitialLang = () => localStorage.getItem(LANGUAGE_STORAGE_KEY) || 'ko';
+    const [currentLang, setCurrentLang] = useState<Language>(getInitialLang());
     const [texts, setTexts] = useState<Record<string, string>>({});
-    const [currentLang, setCurrentLang] = useState<Language>('ko');
     const [isLoading, setIsLoading] = useState(true);
 
+    // 언어 변경 시 localStorage에도 저장
+    const setLanguage = (lang: Language) => {
+        setCurrentLang(lang);
+        localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
+    };
+
     useEffect(() => {
+        setTexts({}); // 언어 또는 페이지가 바뀔 때 이전 번역을 즉시 초기화
         const loadTexts = async () => {
             console.log('Loading texts for page:', pageName, 'with language:', currentLang); // 디버깅용 로그
             setIsLoading(true);
@@ -52,7 +63,7 @@ export const TranslationProvider: React.FC<{ children: React.ReactNode; pageName
     }, [pageName, currentLang]);
 
     return (
-        <TranslationContext.Provider value={{ texts, currentLang, setLanguage: setCurrentLang, isLoading }}>
+        <TranslationContext.Provider value={{ texts, currentLang, setLanguage, isLoading }}>
             {children}
         </TranslationContext.Provider>
     );
