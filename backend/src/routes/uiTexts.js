@@ -40,37 +40,48 @@ router.get('/', async (req, res) => {
             await ensureLangColumn(lang);
         }
 
-        const [rows] = await pool.query(
-            `SELECT page_name, element_key, original_text_ko, ${langCol} FROM ui_texts WHERE page_name = ?`,
-            [page]
-        );
+        // 모든 page_name에 대해 번역 수행
+        const [rows] = await pool.query(`SELECT page_name, element_key, original_text_ko, ${langCol} FROM ui_texts`);
 
-        const hasEmpty = rows.some((row) => !row[langCol]);
-        if (hasEmpty && lang !== 'ko') {
-            for (const row of rows) {
-                if (!row[langCol]) {
-                    const translated = await translateText(row.original_text_ko, 'ko', lang);
-                    if (translated) {
-                        await pool.query(`UPDATE ui_texts SET ${langCol} = ? WHERE page_name = ? AND element_key = ?`, [
-                            translated,
-                            page,
-                            row.element_key,
-                        ]);
-                        row[langCol] = translated;
-                    } else {
-                        row[langCol] = row.original_text_ko;
-                    }
+        const translations = {};
+
+        for (const row of rows) {
+            let text = row[langCol];
+
+            if (!text && lang !== 'ko') {
+                const translated = await translateText(row.original_text_ko, 'ko', lang);
+                if (translated) {
+                    await pool.query(`UPDATE ui_texts SET ${langCol} = ? WHERE page_name = ? AND element_key = ?`, [
+                        translated,
+                        row.page_name,
+                        row.element_key,
+                    ]);
+                    text = translated;
+                } else {
+                    text = row.original_text_ko;
                 }
+            } else if (!text && lang === 'ko') {
+                text = row.original_text_ko;
             }
-        } else {
-            for (const row of rows) {
-                if (!row[langCol] && lang === 'ko') {
-                    row[langCol] = row.original_text_ko;
-                }
+
+            if (!translations[row.page_name]) {
+                translations[row.page_name] = {};
             }
+
+            translations[row.page_name][row.element_key] = text;
         }
 
-        res.json(rows);
+        // 요청된 page_name의 번역만 반환
+        const requestedTranslations = translations[page] || {};
+        res.json(
+            Object.entries(requestedTranslations).map(([element_key, text]) => ({
+                page_name: page,
+                element_key,
+                original_text_ko: rows.find((r) => r.page_name === page && r.element_key === element_key)
+                    ?.original_text_ko,
+                [langCol]: text,
+            }))
+        );
     } catch (err) {
         console.error('UI 텍스트 API 오류:', err);
         res.status(500).json({ error: err.message || '서버 오류' });
