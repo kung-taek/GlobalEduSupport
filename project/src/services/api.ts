@@ -41,3 +41,20 @@ export const translateText = async (text: string, targetLang: Language) => {
     if (!response.ok) throw new Error('Network response was not ok');
     return await response.json();
 };
+
+export const fetchAllUITexts = async (lang: string) => {
+    const response = await fetch(`${API_URL}/api/ui-texts/all?lang=${lang}`, {
+        credentials: 'include',
+    });
+    if (!response.ok) throw new Error('Failed to fetch all UI texts');
+    return await response.json();
+};
+
+export const requestTranslateAll = async (lang: string) => {
+    await fetch(`${API_URL}/api/ui-texts/translate-all`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lang }),
+        credentials: 'include',
+    });
+};

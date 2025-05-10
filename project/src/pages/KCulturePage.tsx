@@ -65,31 +65,32 @@ const Arrow = styled.span<{ open: boolean }>`
 // KCulturePageContent 컴포넌트
 const KCulturePageContent: React.FC = () => {
     const [openIndex, setOpenIndex] = useState<number | null>(0);
-    const { texts } = useTranslation();
+    const { texts, isLoading } = useTranslation();
+    const pageTexts = texts['kculture'] || {};
 
     const accordionData = [
         {
-            title: texts['transportation'] || '교통수단?',
-            content: texts['transportation_content'] || '여기에 텍스트를 채울 수 있습니다.',
+            title: pageTexts['transportation'] || '교통수단?',
+            content: pageTexts['transportation_content'] || '여기에 텍스트를 채울 수 있습니다.',
         },
         {
-            title: texts['dining_etiquette'] || '식사 예절?',
-            content: texts['dining_etiquette_content'] || '식사 예절에 대한 내용입니다.',
+            title: pageTexts['dining_etiquette'] || '식사 예절?',
+            content: pageTexts['dining_etiquette_content'] || '식사 예절에 대한 내용입니다.',
         },
         {
-            title: texts['korean_food'] || '한국의 음식?',
-            content: texts['korean_food_content'] || '한국의 음식에 대한 내용입니다.',
+            title: pageTexts['korean_food'] || '한국의 음식?',
+            content: pageTexts['korean_food_content'] || '한국의 음식에 대한 내용입니다.',
         },
         {
-            title: texts['traditional_culture'] || '전통 문화?',
-            content: texts['traditional_culture_content'] || '전통 문화에 대한 내용입니다.',
+            title: pageTexts['traditional_culture'] || '전통 문화?',
+            content: pageTexts['traditional_culture_content'] || '전통 문화에 대한 내용입니다.',
         },
     ];
 
     return (
         <Container>
             <TitleBar>
-                <PageTitle>{texts['k_culture_title'] || 'K- 문화?'}</PageTitle>
+                <PageTitle>{pageTexts['k_culture_title'] || 'K- 문화?'}</PageTitle>
             </TitleBar>
             {accordionData.map((item, idx) => (
                 <AccordionSection key={item.title}>

@@ -3,10 +3,6 @@ import styled from 'styled-components';
 import { useTranslation } from '../contexts/TranslationContext';
 import { LanguageSelector } from '../components/LanguageSelector';
 
-
-
-
-
 interface MenuItem {
     id: string;
     name: string;
@@ -46,13 +42,14 @@ const MenuItemStyled = styled.li`
 
 const SidebarMenu: React.FC<SidebarMenuProps> = ({ onCategorySelect }) => {
     const { texts } = useTranslation();
+    const pageTexts = texts['main'] || {};
 
     const menuItems: MenuItem[] = [
-        { id: 'MT1', name: texts['public_transport'] || '대중교통' },
-        { id: 'SW8', name: texts['part_time_job'] || '아르바이트' },
-        { id: 'CT1', name: texts['k_culture'] || 'K-문화' },
-        { id: 'CS2', name: texts['food_culture'] || '음식 문화' },
-        { id: 'HP8', name: texts['voice_translation'] || '음성 번역' },
+        { id: 'MT1', name: pageTexts['public_transport'] || '대중교통' },
+        { id: 'SW8', name: pageTexts['part_time_job'] || '아르바이트' },
+        { id: 'CT1', name: pageTexts['k_culture'] || 'K-문화' },
+        { id: 'CS2', name: pageTexts['food_culture'] || '음식 문화' },
+        { id: 'HP8', name: pageTexts['voice_translation'] || '음성 번역' },
     ];
 
     return (

@@ -5,18 +5,14 @@ import App from './App';
 import { BrowserRouter } from 'react-router-dom';
 import { TranslationProvider } from './contexts/TranslationContext';
 
-
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
-);
+const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 
 root.render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <TranslationProvider pageName='main'>
-      <App />
-      </TranslationProvider>
-    </BrowserRouter>
-    
-  </React.StrictMode>
-); 
+    <React.StrictMode>
+        <BrowserRouter>
+            <TranslationProvider>
+                <App />
+            </TranslationProvider>
+        </BrowserRouter>
+    </React.StrictMode>
+);

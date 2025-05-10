@@ -90,22 +90,37 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/translate-all', async (req, res) => {
-    const targetLangs = ['en', 'ja', 'vi', 'mn', 'zh', 'ru', 'fr', 'es', 'ar'];
-    try {
-        const [rows] = await pool.query('SELECT * FROM ui_texts');
-        for (const row of rows) {
-            for (const lang of targetLangs) {
-                const col = `translated_text_${lang}`;
-                await ensureLangColumn(lang);
-                if (!row[col]) {
-                    const translated = await translateText(row.original_text_ko, 'ko', lang);
-                    if (translated) {
-                        await pool.query(`UPDATE ui_texts SET ${col} = ? WHERE id = ?`, [translated, row.id]);
-                    }
-                }
+    const { lang } = req.body;
+    if (!lang) return res.status(400).json({ error: 'lang 파라미터 필요' });
+    const langCol = `translated_text_${lang}`;
+    await ensureLangColumn(lang);
+    const [rows] = await pool.query('SELECT * FROM ui_texts');
+    for (const row of rows) {
+        if (!row[langCol]) {
+            const translated = await translateText(row.original_text_ko, 'ko', lang);
+            if (translated) {
+                await pool.query(`UPDATE ui_texts SET ${langCol} = ? WHERE id = ?`, [translated, row.id]);
             }
         }
-        res.json({ success: true });
+    }
+    res.json({ success: true });
+});
+
+router.get('/all', async (req, res) => {
+    try {
+        const { lang = 'ko' } = req.query;
+        const langCol = `translated_text_${lang}`;
+        if (lang !== 'ko') {
+            await ensureLangColumn(lang);
+        }
+        const [rows] = await pool.query(`SELECT page_name, element_key, original_text_ko, ${langCol} FROM ui_texts`);
+        // page_name별로 묶어서 반환
+        const result = {};
+        for (const row of rows) {
+            if (!result[row.page_name]) result[row.page_name] = {};
+            result[row.page_name][row.element_key] = row[langCol] || row.original_text_ko;
+        }
+        res.json(result);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

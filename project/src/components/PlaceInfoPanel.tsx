@@ -54,49 +54,50 @@ const SectionTitle = styled.h2`
 
 const PlaceInfoPanel: React.FC<PlaceInfoPanelProps> = ({ selectedPlace, recentPlaces }) => {
     const { texts } = useTranslation();
+    const pageTexts = texts['main'] || {};
 
     return (
         <PanelContainer>
             {selectedPlace && (
                 <>
-                    <SectionTitle>{texts['selected_place'] || '선택한 장소?'}</SectionTitle>
+                    <SectionTitle>{pageTexts['selected_place'] || '선택한 장소?'}</SectionTitle>
                     <PlaceCard>
                         <h3>{selectedPlace.place_name}</h3>
                         <p>
-                            {texts['address'] || '주소?'}: {selectedPlace.address_name}
+                            {pageTexts['address'] || '주소?'}: {selectedPlace.address_name}
                         </p>
                         {selectedPlace.phone && (
                             <p>
-                                {texts['phone'] || '전화?'}: {selectedPlace.phone}
+                                {pageTexts['phone'] || '전화?'}: {selectedPlace.phone}
                             </p>
                         )}
                         <p>
-                            {texts['category'] || '카테고리?'}: {selectedPlace.category_group_name}
+                            {pageTexts['category'] || '카테고리?'}: {selectedPlace.category_group_name}
                         </p>
                         <p>
-                            {texts['distance'] || '거리?'}: {selectedPlace.distance}m
+                            {pageTexts['distance'] || '거리?'}: {selectedPlace.distance}m
                         </p>
                     </PlaceCard>
                 </>
             )}
 
-            <SectionTitle>{texts['recent_places'] || '최근 본 장소?'}</SectionTitle>
+            <SectionTitle>{pageTexts['recent_places'] || '최근 본 장소?'}</SectionTitle>
             {recentPlaces.map((place, index) => (
                 <PlaceCard key={index}>
                     <h3>{place.place_name}</h3>
                     <p>
-                        {texts['address'] || '주소?'}: {place.address_name}
+                        {pageTexts['address'] || '주소?'}: {place.address_name}
                     </p>
                     {place.phone && (
                         <p>
-                            {texts['phone'] || '전화?'}: {place.phone}
+                            {pageTexts['phone'] || '전화?'}: {place.phone}
                         </p>
                     )}
                     <p>
-                        {texts['category'] || '카테고리?'}: {place.category_group_name}
+                        {pageTexts['category'] || '카테고리?'}: {place.category_group_name}
                     </p>
                     <p>
-                        {texts['distance'] || '거리?'}: {place.distance}m
+                        {pageTexts['distance'] || '거리?'}: {place.distance}m
                     </p>
                 </PlaceCard>
             ))}

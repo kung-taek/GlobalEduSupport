@@ -78,7 +78,7 @@ const App: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const { texts, isLoading, currentLang } = useTranslation();
+    const { texts, currentLang, setLanguage, isLoading } = useTranslation();
 
     console.log('Current texts:', texts);
     console.log('Is loading:', isLoading);
@@ -122,8 +122,13 @@ const App: React.FC = () => {
         return 'main';
     };
 
+    const pageName = getPageName();
+
+    // texts[pageName]에서 해당 페이지의 번역을 꺼내서 사용
+    const pageTexts = texts[pageName] || {};
+
     return (
-        <TranslationProvider key={getPageName()} pageName={getPageName()}>
+        <TranslationProvider>
             <AppContainer>
                 <MenuIcon onClick={handleMenuIconClick} sidebar={isMenuOpen}>
                     <span
@@ -168,7 +173,7 @@ const App: React.FC = () => {
                                     <SearchInput
                                         type="text"
                                         placeholder={
-                                            isLoading ? '' : texts['search_placeholder'] || '출발지점 - 도착지점'
+                                            isLoading ? '' : pageTexts['search_placeholder'] || '출발지점 - 도착지점'
                                         }
                                         value={search}
                                         onChange={(e) => setSearch(e.target.value)}
