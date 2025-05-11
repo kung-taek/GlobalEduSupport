@@ -24,7 +24,7 @@ export function useAuth() {
     }, []);
 
     const login = () => {
-        window.location.href = 'http://globalhelper.p-e.kr:5000/api/auth/google';
+        window.location.href = `${process.env.REACT_APP_BACKEND_URL}/api/auth/google`;
     };
 
     const logout = () => {

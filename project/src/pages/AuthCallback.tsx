@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import React from 'react';
 
-const AuthCallback = () => {
+const AuthCallback: React.FC = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -9,12 +10,9 @@ const AuthCallback = () => {
         const token = params.get('token');
         if (token) {
             localStorage.setItem('token', token);
-            // 로그인 성공 후 메인 페이지로 이동
             navigate('/');
         } else {
-            // 에러 처리
-            alert('로그인에 실패했습니다.');
-            navigate('/');
+            navigate('/login');
         }
     }, [navigate]);
 

@@ -8,6 +8,7 @@ import KCulturePageContent from './pages/KCulturePage';
 import { TranslationProvider, useTranslation } from './contexts/TranslationContext';
 import { LanguageSelector } from './components/LanguageSelector';
 import AuthCallback from './pages/AuthCallback';
+import Login from './pages/Login';
 
 interface Place {
     place_name: string;
@@ -269,6 +270,7 @@ const App: React.FC = () => {
                 />
                 <Route path="/kculture" element={<KCulturePageContent />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
+                <Route path="/login" element={<Login />} />
             </Routes>
         </AppContainer>
     );
