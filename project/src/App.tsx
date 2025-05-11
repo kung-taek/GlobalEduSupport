@@ -25,11 +25,14 @@ const AppContainer = styled.div`
     display: flex;
     height: 100vh;
     width: 100vw;
+    position: relative;
 `;
 
 const MapContainer = styled.div`
     flex: 1;
     position: relative;
+    height: 100vh;
+    width: 100%;
 `;
 
 const SearchBoxWrapper = styled.div`
@@ -52,10 +55,10 @@ const SearchInput = styled.input`
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
 `;
 
-const MenuIcon = styled.div<{ sidebar?: boolean }>`
+const MenuIcon = styled.div<{ $sidebar?: boolean }>`
     position: fixed;
     top: 16px;
-    left: ${({ sidebar }) => (sidebar ? '266px' : '16px')};
+    left: ${({ $sidebar }) => ($sidebar ? '266px' : '16px')};
     font-size: 32px;
     cursor: pointer;
     z-index: 200;
@@ -128,69 +131,65 @@ const App: React.FC = () => {
     const pageTexts = texts[pageName] || {};
 
     return (
-        <TranslationProvider>
-            <AppContainer>
-                <MenuIcon onClick={handleMenuIconClick} sidebar={isMenuOpen}>
-                    <span
-                        style={{
-                            display: 'block',
-                            width: 24,
-                            height: 3,
-                            background: '#222',
-                            margin: '5px 0',
-                            borderRadius: 2,
-                        }}
-                    ></span>
-                    <span
-                        style={{
-                            display: 'block',
-                            width: 24,
-                            height: 3,
-                            background: '#222',
-                            margin: '5px 0',
-                            borderRadius: 2,
-                        }}
-                    ></span>
-                    <span
-                        style={{
-                            display: 'block',
-                            width: 24,
-                            height: 3,
-                            background: '#222',
-                            margin: '5px 0',
-                            borderRadius: 2,
-                        }}
-                    ></span>
-                </MenuIcon>
-                {isMenuOpen && <SidebarMenu onCategorySelect={handleCategorySelect} />}
+        <AppContainer>
+            <MenuIcon onClick={handleMenuIconClick} $sidebar={isMenuOpen}>
+                <span
+                    style={{
+                        display: 'block',
+                        width: 24,
+                        height: 3,
+                        background: '#222',
+                        margin: '5px 0',
+                        borderRadius: 2,
+                    }}
+                ></span>
+                <span
+                    style={{
+                        display: 'block',
+                        width: 24,
+                        height: 3,
+                        background: '#222',
+                        margin: '5px 0',
+                        borderRadius: 2,
+                    }}
+                ></span>
+                <span
+                    style={{
+                        display: 'block',
+                        width: 24,
+                        height: 3,
+                        background: '#222',
+                        margin: '5px 0',
+                        borderRadius: 2,
+                    }}
+                ></span>
+            </MenuIcon>
+            {isMenuOpen && <SidebarMenu onCategorySelect={handleCategorySelect} />}
 
-                <Routes>
-                    <Route
-                        path="/"
-                        element={
-                            <MapContainer>
-                                <SearchBoxWrapper>
-                                    <SearchInput
-                                        type="text"
-                                        placeholder={
-                                            isLoading ? '' : pageTexts['search_placeholder'] || '출발지점 - 도착지점'
-                                        }
-                                        value={search}
-                                        onChange={(e) => setSearch(e.target.value)}
-                                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                                    />
-                                </SearchBoxWrapper>
-                                <KakaoMap />
-                            </MapContainer>
-                        }
-                    />
-                    <Route path="/kculture" element={<KCulturePageContent />} />
-                </Routes>
-                {location.pathname === '/' && (
-                    <PlaceInfoPanel selectedPlace={selectedPlace} recentPlaces={recentPlaces} />
-                )}
-            </AppContainer>
-        </TranslationProvider>
+            <Routes>
+                <Route
+                    path="/"
+                    element={
+                        <MapContainer>
+                            <SearchBoxWrapper>
+                                <SearchInput
+                                    type="text"
+                                    placeholder={
+                                        isLoading ? '' : pageTexts['search_placeholder'] || '출발지점 - 도착지점'
+                                    }
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                                />
+                            </SearchBoxWrapper>
+                            <KakaoMap />
+                            <PlaceInfoPanel selectedPlace={selectedPlace} recentPlaces={recentPlaces} />
+                        </MapContainer>
+                    }
+                />
+                <Route path="/kculture" element={<KCulturePageContent />} />
+            </Routes>
+        </AppContainer>
     );
 };
 

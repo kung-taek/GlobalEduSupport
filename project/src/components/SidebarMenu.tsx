@@ -45,11 +45,8 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ onCategorySelect }) => {
     const pageTexts = texts['main'] || {};
 
     const menuItems: MenuItem[] = [
-        { id: 'MT1', name: pageTexts['public_transport'] || '대중교통' },
-        { id: 'SW8', name: pageTexts['part_time_job'] || '아르바이트' },
-        { id: 'CT1', name: pageTexts['k_culture'] || 'K-문화' },
-        { id: 'CS2', name: pageTexts['food_culture'] || '음식 문화' },
-        { id: 'HP8', name: pageTexts['voice_translation'] || '음성 번역' },
+        { id: 'MT1', name: pageTexts['find_way'] || '길 찾기' },
+        { id: 'CT1', name: pageTexts['k_culture'] || '한국 문화' },
     ];
 
     return (

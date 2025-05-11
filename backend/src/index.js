@@ -359,16 +359,11 @@ app.get('/', async (req, res) => {
                     async function saveEdit(button) {
                         const cell = button.closest('.editable-cell');
                         const input = cell.querySelector('input');
-                        const newText = input.value.trim();
+                        const newText = input.value;
                         const pageName = cell.getAttribute('data-page-name');
                         const elementKey = cell.getAttribute('data-element-key');
                         const column = cell.getAttribute('data-column');
                         
-                        if (!newText) {
-                            alert('내용을 입력해주세요.');
-                            return;
-                        }
-
                         try {
                             const response = await fetch('/update-column', {
                                 method: 'POST',

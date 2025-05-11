@@ -1,0 +1,80 @@
+.panel-container {
+    width: 100%;
+    height: 100vh;
+    background: var(--background-color);
+    box-shadow: -2px 0 8px var(--shadow-color);
+    padding: var(--spacing-md);
+    overflow-y: auto;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: var(--z-index-fixed);
+    transition: transform 0.3s ease;
+}
+
+.panel-container.mobile {
+    transform: translateY(85%);
+}
+
+.panel-container.mobile.open {
+    transform: translateY(0);
+}
+
+.drag-handle {
+    width: 40px;
+    height: 4px;
+    background: var(--border-color);
+    border-radius: var(--border-radius-sm);
+    margin: 0 auto var(--spacing-md);
+    cursor: grab;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+.section-title {
+    font-size: var(--font-size-large);
+    font-weight: bold;
+    margin-bottom: var(--spacing-md);
+    color: var(--text-color);
+}
+
+.place-card {
+    background: var(--background-color);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+    box-shadow: 0 1px 3px var(--shadow-color);
+}
+
+.place-card h3 {
+    margin: 0 0 var(--spacing-sm) 0;
+    font-size: var(--font-size-base);
+    color: var(--text-color);
+}
+
+.place-card p {
+    margin: var(--spacing-xs) 0;
+    font-size: var(--font-size-small);
+    color: var(--secondary-color);
+}
+
+/* Desktop styles */
+@media (min-width: 768px) {
+    .panel-container {
+        width: 300px;
+        position: absolute;
+        right: 0;
+        left: auto;
+        transform: none;
+    }
+
+    .panel-container.mobile {
+        transform: none;
+    }
+
+    .drag-handle {
+        display: none;
+    }
+}

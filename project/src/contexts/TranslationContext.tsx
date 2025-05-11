@@ -23,7 +23,9 @@ export const TranslationProvider: React.FC<{ children: React.ReactNode }> = ({ c
         setCurrentLang(lang);
         localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
         setIsLoading(true);
+        // 번역이 DB에 없으면 번역 요청
         await requestTranslateAll(lang);
+        // 전체 번역 다시 불러오기
         const allTexts = await fetchAllUITexts(lang);
         setTexts(allTexts);
         setIsLoading(false);
