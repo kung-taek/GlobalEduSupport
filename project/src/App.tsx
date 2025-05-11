@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import KakaoMap from './components/KakaoMap';
@@ -35,24 +35,36 @@ const MapContainer = styled.div`
     width: 100%;
 `;
 
-const SearchBoxWrapper = styled.div`
+const SearchBoxWrapper = styled.div<{ $sidebar: boolean }>`
     position: absolute;
     top: 24px;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 200px;
+    width: calc(100vw - 250px - 300px);
+    display: flex;
+    justify-content: center;
     z-index: 10;
-    width: 400px;
-    max-width: 90%;
+    pointer-events: none;
+    transition: left 0.2s;
+
+    @media (max-width: 768px) {
+        left: 0 !important;
+        width: 100vw;
+        top: 52px;
+        justify-content: center;
+        padding: 0 8px;
+    }
 `;
 
 const SearchInput = styled.input`
-    width: 100%;
+    width: 400px;
+    max-width: 100%;
     padding: 12px 16px;
     border: 1px solid #ddd;
     border-radius: 8px;
     font-size: 16px;
     outline: none;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+    pointer-events: auto;
 `;
 
 const MenuIcon = styled.div<{ $sidebar?: boolean }>`
@@ -61,12 +73,55 @@ const MenuIcon = styled.div<{ $sidebar?: boolean }>`
     left: ${({ $sidebar }) => ($sidebar ? '266px' : '16px')};
     font-size: 32px;
     cursor: pointer;
-    z-index: 200;
+    z-index: 400;
     background: #fff;
     border-radius: 8px;
     padding: 4px 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
     transition: left 0.2s;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    @media (max-width: 768px) {
+        display: none;
+    }
+`;
+
+const MenuBar = styled.span`
+    display: block;
+    width: 24px;
+    height: 3px;
+    background: #222;
+    border-radius: 2px;
+    transition: transform 0.2s;
+`;
+
+const MobileSidebarDragHandle = styled.div`
+    display: none;
+    @media (max-width: 768px) {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 40px;
+        z-index: 350;
+        background: transparent;
+        cursor: pointer;
+
+        &::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 8px;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 4px;
+            background: #ddd;
+            border-radius: 2px;
+        }
+    }
 `;
 
 const DEFAULT_CENTER = { lat: 37.5665, lng: 126.978 };
@@ -82,9 +137,47 @@ const App: React.FC = () => {
     const location = useLocation();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { texts, currentLang, setLanguage, isLoading } = useTranslation();
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    const [sidebarDragY, setSidebarDragY] = useState(0);
+    const [sidebarDragging, setSidebarDragging] = useState(false);
+    const sidebarStartY = useRef(0);
+    const sidebarCurrentY = useRef(0);
 
     console.log('Current texts:', texts);
     console.log('Is loading:', isLoading);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const handleSidebarTouchStart = (e: React.TouchEvent) => {
+        if (!isMenuOpen) {
+            setIsMenuOpen(true);
+            return;
+        }
+        setSidebarDragging(true);
+        sidebarStartY.current = e.touches[0].clientY;
+        sidebarCurrentY.current = e.touches[0].clientY;
+    };
+
+    const handleSidebarTouchMove = (e: React.TouchEvent) => {
+        if (!sidebarDragging || !isMenuOpen) return;
+        sidebarCurrentY.current = e.touches[0].clientY;
+        const diff = sidebarCurrentY.current - sidebarStartY.current;
+        if (diff > 0) {
+            setSidebarDragY(diff);
+        }
+    };
+
+    const handleSidebarTouchEnd = () => {
+        setSidebarDragging(false);
+        if (sidebarDragY > 50) {
+            setIsMenuOpen(false);
+        }
+        setSidebarDragY(0);
+    };
 
     const handlePlaceSelect = (place: Place, latLng?: LatLng) => {
         setSelectedPlace(place);
@@ -133,45 +226,31 @@ const App: React.FC = () => {
     return (
         <AppContainer>
             <MenuIcon onClick={handleMenuIconClick} $sidebar={isMenuOpen}>
-                <span
-                    style={{
-                        display: 'block',
-                        width: 24,
-                        height: 3,
-                        background: '#222',
-                        margin: '5px 0',
-                        borderRadius: 2,
-                    }}
-                ></span>
-                <span
-                    style={{
-                        display: 'block',
-                        width: 24,
-                        height: 3,
-                        background: '#222',
-                        margin: '5px 0',
-                        borderRadius: 2,
-                    }}
-                ></span>
-                <span
-                    style={{
-                        display: 'block',
-                        width: 24,
-                        height: 3,
-                        background: '#222',
-                        margin: '5px 0',
-                        borderRadius: 2,
-                    }}
-                ></span>
+                <MenuBar />
+                <MenuBar />
+                <MenuBar />
             </MenuIcon>
-            {isMenuOpen && <SidebarMenu onCategorySelect={handleCategorySelect} />}
+            {isMobile && (
+                <MobileSidebarDragHandle
+                    onTouchStart={handleSidebarTouchStart}
+                    onTouchMove={handleSidebarTouchMove}
+                    onTouchEnd={handleSidebarTouchEnd}
+                />
+            )}
+            <SidebarMenu
+                onCategorySelect={handleCategorySelect}
+                isMobile={isMobile}
+                isOpen={isMenuOpen}
+                dragY={sidebarDragY}
+                setIsOpen={setIsMenuOpen}
+            />
 
             <Routes>
                 <Route
                     path="/"
                     element={
                         <MapContainer>
-                            <SearchBoxWrapper>
+                            <SearchBoxWrapper $sidebar={isMenuOpen}>
                                 <SearchInput
                                     type="text"
                                     placeholder={
