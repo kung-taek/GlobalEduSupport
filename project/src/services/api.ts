@@ -51,10 +51,12 @@ export const fetchAllUITexts = async (lang: string) => {
 };
 
 export const requestTranslateAll = async (lang: string) => {
-    await fetch(`${API_URL}/api/ui-texts/translate-all`, {
+    const response = await fetch(`${API_URL}/api/ui-texts/translate-all`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lang }),
         credentials: 'include',
     });
+    if (!response.ok) throw new Error('Failed to fetch translations');
+    return await response.json();
 };
