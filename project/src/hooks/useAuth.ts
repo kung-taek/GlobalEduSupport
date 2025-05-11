@@ -18,13 +18,13 @@ export function useAuth() {
                 headers: { Authorization: `Bearer ${token}` },
                 withCredentials: true,
             })
-            .then((res) => setUser(res.data))
-            .catch(() => setUser(null))
-            .finally(() => setLoading(false));
+            .then((res: any) => setUser(res.data))
+            .catch(() => setUser(null));
+        setLoading(false);
     }, []);
 
     const login = () => {
-        window.location.href = '/api/auth/google';
+        window.location.href = 'http://globalhelper.p-e.kr:5000/api/auth/google';
     };
 
     const logout = () => {

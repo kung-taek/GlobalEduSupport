@@ -196,8 +196,9 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ onCategorySelect, isMobile, i
                     </MenuItemStyled>
                 ))}
             </MenuList>
+            {isMobile ? <AuthSection isMobile={isMobile} /> : null}
             <LanguageSelector />
-            <AuthSection isMobile={isMobile} />
+            {!isMobile ? <AuthSection isMobile={isMobile} /> : null}
         </SidebarContainer>
     );
 };

@@ -7,6 +7,7 @@ import PlaceInfoPanel from './components/PlaceInfoPanel';
 import KCulturePageContent from './pages/KCulturePage';
 import { TranslationProvider, useTranslation } from './contexts/TranslationContext';
 import { LanguageSelector } from './components/LanguageSelector';
+import AuthCallback from './pages/AuthCallback';
 
 interface Place {
     place_name: string;
@@ -267,6 +268,7 @@ const App: React.FC = () => {
                     }
                 />
                 <Route path="/kculture" element={<KCulturePageContent />} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
             </Routes>
         </AppContainer>
     );
