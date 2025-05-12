@@ -51,12 +51,27 @@ export const fetchAllUITexts = async (lang: string) => {
 };
 
 export const requestTranslateAll = async (lang: string) => {
-    const response = await fetch(`${API_URL}/api/ui-texts/translate-all`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lang }),
-        credentials: 'include',
-    });
-    if (!response.ok) throw new Error('Failed to fetch translations');
-    return await response.json();
+    try {
+        const response = await fetch(`${API_URL}/api/ui-texts/translate-all`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            },
+            body: JSON.stringify({ lang }),
+            credentials: 'include',
+            mode: 'cors',
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Translation request failed:', error);
+        // 에러 발생 시 빈 객체 반환하여 앱이 계속 동작하도록 함
+        return {};
+    }
 };

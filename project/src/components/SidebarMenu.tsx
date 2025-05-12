@@ -17,9 +17,9 @@ interface SidebarMenuProps {
     setIsOpen: (open: boolean) => void;
 }
 
-const SidebarContainer = styled.div<{ isMobile: boolean; isOpen: boolean; dragY: number }>`
+const SidebarContainer = styled.div<{ $isMobile: boolean; $isOpen: boolean; $dragY: number }>`
     width: 250px;
-    height: ${({ isMobile }) => (isMobile ? 'auto' : '100vh')};
+    height: ${({ $isMobile }) => ($isMobile ? 'auto' : '100vh')};
     max-height: 100vh;
     background-color: #ffffff;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
@@ -32,14 +32,14 @@ const SidebarContainer = styled.div<{ isMobile: boolean; isOpen: boolean; dragY:
     display: flex;
     flex-direction: column;
     align-items: center;
-    transform: ${({ isMobile, isOpen }) => (!isMobile ? (isOpen ? 'translateX(0)' : 'translateX(-100%)') : 'none')};
+    transform: ${({ $isMobile, $isOpen }) => (!$isMobile ? ($isOpen ? 'translateX(0)' : 'translateX(-100%)') : 'none')};
 
     @media (max-width: 768px) {
         width: 100vw;
         height: auto;
         max-height: 80vh;
-        transform: ${({ isOpen, dragY }) =>
-            isOpen ? `translateY(${dragY}px)` : `translateY(calc(-100% + 40px + ${dragY}px))`};
+        transform: ${({ $isOpen, $dragY }) =>
+            $isOpen ? `translateY(${$dragY}px)` : `translateY(calc(-100% + 40px + ${$dragY}px))`};
         border-radius: 0 0 16px 16px;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
         position: fixed;
@@ -185,7 +185,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ onCategorySelect, isMobile, i
     ];
 
     return (
-        <SidebarContainer isMobile={isMobile} isOpen={isOpen} dragY={dragY}>
+        <SidebarContainer $isMobile={isMobile} $isOpen={isOpen} $dragY={dragY}>
             {isMobile && (
                 <DragHandle onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd} />
             )}

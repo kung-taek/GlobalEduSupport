@@ -15,12 +15,12 @@ interface PlaceInfoPanelProps {
     recentPlaces: Place[];
 }
 
-const PanelContainer = styled.div<{ isMobile: boolean; isOpen: boolean; dragHeight: number }>`
+const PanelContainer = styled.div<{ $isMobile: boolean; $isOpen: boolean; $dragHeight: number }>`
     width: 300px;
-    height: ${({ isMobile, isOpen }) => (isMobile ? (isOpen ? '50vh' : '80px') : '100vh')};
-    max-height: ${({ isMobile, isOpen }) => (isMobile ? (isOpen ? '50vh' : '80px') : '100vh')};
-    background: ${({ isOpen }) => (isOpen ? '#ffffff' : 'rgba(255,255,255,0.95)')};
-    box-shadow: ${({ isOpen }) => (isOpen ? '-2px 0 8px rgba(0, 0, 0, 0.1)' : '0 -4px 16px rgba(0,0,0,0.15)')};
+    height: ${({ $isMobile, $isOpen }) => ($isMobile ? ($isOpen ? '50vh' : '80px') : '100vh')};
+    max-height: ${({ $isMobile, $isOpen }) => ($isMobile ? ($isOpen ? '50vh' : '80px') : '100vh')};
+    background: ${({ $isOpen }) => ($isOpen ? '#ffffff' : 'rgba(255,255,255,0.95)')};
+    box-shadow: ${({ $isOpen }) => ($isOpen ? '-2px 0 8px rgba(0, 0, 0, 0.1)' : '0 -4px 16px rgba(0,0,0,0.15)')};
     padding: 0;
     position: fixed;
     right: 0;
@@ -32,10 +32,10 @@ const PanelContainer = styled.div<{ isMobile: boolean; isOpen: boolean; dragHeig
 
     @media (max-width: 768px) {
         width: 100%;
-        transform: ${({ isOpen, dragHeight }) =>
-            isOpen ? `translateY(${dragHeight}px)` : `translateY(calc(100% - 80px))`};
+        transform: ${({ $isOpen, $dragHeight }) =>
+            $isOpen ? `translateY(${$dragHeight}px)` : `translateY(calc(100% - 80px))`};
         border-radius: 16px 16px 0 0;
-        box-shadow: ${({ isOpen }) => (isOpen ? '0 -4px 16px rgba(0, 0, 0, 0.15)' : 'none')};
+        box-shadow: ${({ $isOpen }) => ($isOpen ? '0 -4px 16px rgba(0, 0, 0, 0.15)' : 'none')};
         padding-top: 0;
         position: fixed;
         right: 0;
@@ -160,7 +160,7 @@ const PlaceInfoPanel: React.FC<PlaceInfoPanelProps> = ({ selectedPlace, recentPl
     };
 
     return (
-        <PanelContainer isMobile={isMobile} isOpen={isOpen} dragHeight={dragHeight}>
+        <PanelContainer $isMobile={isMobile} $isOpen={isOpen} $dragHeight={dragHeight}>
             {isMobile && (
                 <div
                     style={{
