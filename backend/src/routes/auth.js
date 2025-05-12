@@ -2,7 +2,7 @@ import express from 'express';
 import { register, login } from '../controllers/authController.js';
 import passport from 'passport';
 import dotenv from 'dotenv';
-import { authenticateToken } from '../middleware/authMiddleware.js';
+import authenticateToken from '../middleware/authMiddleware.js';
 import jwt from 'jsonwebtoken';
 
 dotenv.config();
