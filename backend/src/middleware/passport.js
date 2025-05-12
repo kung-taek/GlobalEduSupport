@@ -16,15 +16,20 @@ passport.use(
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
+                console.log('Google Strategy - Profile:', profile);
                 const googleId = profile.id;
                 const email = profile.emails[0].value;
                 const username = profile.displayName;
+
+                console.log('Google Strategy - User Info:', { googleId, email, username });
 
                 // 기존 사용자 확인
                 const [users] = await pool.query('SELECT * FROM users WHERE google_id = ? OR email = ?', [
                     googleId,
                     email,
                 ]);
+
+                console.log('Google Strategy - Existing Users:', users);
 
                 let user;
                 if (users.length === 0) {
@@ -40,6 +45,7 @@ passport.use(
                         googleId,
                         provider: 'google',
                     };
+                    console.log('Google Strategy - New User Created:', user);
                 } else {
                     user = users[0];
                     // 기존 사용자의 Google 정보 업데이트
@@ -49,6 +55,7 @@ passport.use(
                             'google',
                             user.id,
                         ]);
+                        console.log('Google Strategy - Updated Existing User:', user);
                     }
                 }
 
@@ -64,8 +71,11 @@ passport.use(
                     { expiresIn: '24h' }
                 );
 
+                console.log('Google Strategy - Token Generated:', token);
+
                 return done(null, { ...user, token });
             } catch (error) {
+                console.error('Google Strategy - Error:', error);
                 return done(error, null);
             }
         }

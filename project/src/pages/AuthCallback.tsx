@@ -7,17 +7,45 @@ const AuthCallback: React.FC = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
+        console.log('AuthCallback - Full URL:', window.location.href);
+        console.log('AuthCallback - Search Params:', Object.fromEntries(searchParams.entries()));
+
         const params = new URLSearchParams(window.location.search);
         const token = params.get('token');
+        const error = params.get('error');
+
+        console.log('AuthCallback - Token:', token);
+        console.log('AuthCallback - Error:', error);
+
+        if (error) {
+            console.error('AuthCallback - Authentication error:', error);
+            navigate(`/login?error=${error}`);
+            return;
+        }
+
         if (token) {
+            console.log('AuthCallback - Storing token and redirecting to home');
             localStorage.setItem('token', token);
             navigate('/');
         } else {
-            navigate('/login');
+            console.error('AuthCallback - No token received');
+            navigate('/login?error=no_token');
         }
     }, [searchParams, navigate]);
 
-    return <div>로그인 처리 중...</div>;
+    return (
+        <div
+            style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '100vh',
+                fontSize: '1.2rem',
+            }}
+        >
+            로그인 처리 중...
+        </div>
+    );
 };
 
 export default AuthCallback;

@@ -32,11 +32,18 @@ router.get(
         session: false,
     }),
     (req, res) => {
+        console.log('Google Callback - req.user:', req.user);
+        console.log('Google Callback - token:', req.user?.token);
+        console.log('Google Callback - FRONTEND_URL:', process.env.FRONTEND_URL);
+
         if (!req.user || !req.user.token) {
+            console.error('Google Callback - No token found in req.user');
             return res.redirect(`${process.env.FRONTEND_URL}/login?error=no_token`);
         }
         const token = req.user.token;
-        res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${token}`);
+        const redirectUrl = `${process.env.FRONTEND_URL}/auth/callback?token=${token}`;
+        console.log('Google Callback - Redirecting to:', redirectUrl);
+        res.redirect(redirectUrl);
     }
 );
 
