@@ -1,23 +1,21 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import React from 'react';
+import useAuth from '../hooks/useAuth';
 
-const AuthCallback: React.FC = () => {
+export default function AuthCallback() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
-        const token = params.get('token');
+        const token = searchParams.get('token');
         if (token) {
-            localStorage.setItem('token', token);
+            login(token);
             navigate('/');
         } else {
-            navigate('/login');
+            navigate('/login?error=no_token');
         }
-    }, [searchParams, navigate]);
+    }, [searchParams, navigate, login]);
 
     return <div>로그인 처리 중...</div>;
-};
-
-export default AuthCallback;
+}

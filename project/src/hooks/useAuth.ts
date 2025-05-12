@@ -1,39 +1,64 @@
-import { useEffect, useState } from 'react';
+import { create } from 'zustand';
 import axios from 'axios';
 
-export function useAuth() {
-    const [user, setUser] = useState<{ username?: string } | null>(null);
-    const [loading, setLoading] = useState(true);
+interface User {
+    id: number;
+    email: string;
+    username: string;
+    provider: string;
+}
 
-    useEffect(() => {
+interface AuthState {
+    user: User | null;
+    loading: boolean;
+    error: string | null;
+    login: (token: string) => void;
+    logout: () => void;
+    checkAuth: () => Promise<void>;
+}
+
+const useAuth = create<AuthState>((set: any) => ({
+    user: null,
+    loading: true,
+    error: null,
+    login: (token: string) => {
+        localStorage.setItem('token', token);
+        set({ loading: true });
+        useAuth.getState().checkAuth();
+    },
+    logout: () => {
+        localStorage.removeItem('token');
+        set({ user: null, loading: false, error: null });
+    },
+    checkAuth: async () => {
         const token = localStorage.getItem('token');
         if (!token) {
-            setUser(null);
-            setLoading(false);
+            set({ user: null, loading: false, error: null });
             return;
         }
-        // 토큰이 있으면 사용자 정보 요청
-        console.log('Stored Token:', token);
 
-        axios
-            .get(`${process.env.REACT_APP_BACKEND_URL}/api/auth/me`, {
-                headers: { Authorization: `Bearer ${token}` },
+        try {
+            const response = await axios.get(`${process.env.VITE_BACKEND_URL}/api/auth/me`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                },
                 withCredentials: true,
-            })
-            .then((res: any) => setUser(res.data))
-            .catch(() => setUser(null));
-        setLoading(false);
-    }, []);
+            });
+            set({ user: response.data, loading: false, error: null });
+        } catch (error) {
+            console.error('인증 확인 중 오류:', error);
+            localStorage.removeItem('token');
+            set({ user: null, loading: false, error: '인증에 실패했습니다.' });
+        }
+    },
+}));
 
-    const login = () => {
-        window.location.href = `${process.env.REACT_APP_BACKEND_URL}/api/auth/google`;
-    };
-
-    const logout = () => {
-        localStorage.removeItem('token');
-        setUser(null);
-        window.location.reload();
-    };
-
-    return { user, loading, login, logout };
+// 초기 인증 상태 확인
+const token = localStorage.getItem('token');
+if (token) {
+    useAuth.getState().checkAuth();
 }
+
+export default useAuth;
