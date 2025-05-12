@@ -26,7 +26,7 @@ const AuthCallback: React.FC = () => {
         if (token) {
             console.log('AuthCallback - Storing token and redirecting to home');
             localStorage.setItem('token', token);
-            navigate('/');
+            window.location.href = '/';
         } else {
             console.error('AuthCallback - No token received');
             navigate('/login?error=no_token');

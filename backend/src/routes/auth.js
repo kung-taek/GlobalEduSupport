@@ -56,7 +56,7 @@ router.get('/test', (req, res) => {
 router.get('/me', authenticateToken, async (req, res) => {
     try {
         // req.user는 JWT에서 복호화된 정보 (id, email 등)
-        res.json({ id: req.user.id, email: req.user.email });
+        res.json({ id: req.user.id, email: req.user.email, username: req.user.username });
     } catch (err) {
         res.status(500).json({ error: '사용자 정보를 불러올 수 없습니다.' });
     }

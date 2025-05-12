@@ -130,8 +130,8 @@ const AuthSection: React.FC<{ isMobile: boolean }> = ({ isMobile }) => {
                 </button>
             ) : (
                 <>
-                    {!isMobile && (
-                        <div style={{ marginBottom: 8, fontWeight: 'bold', color: '#333' }}>{user.username}</div>
+                    {!isMobile && user?.username && (
+                        <div style={{ marginBottom: 8, fontWeight: 'bold', color: '#333' }}>{user.username}님</div>
                     )}
                     <button
                         onClick={logout}
