@@ -8,7 +8,7 @@ import jwt from 'jsonwebtoken';
 dotenv.config();
 const router = express.Router();
 
-// 일반 회원가입 처리
+// 일반 회원가입 처리 부분
 router.post('/register', register);
 
 // 일반 로그인 처리
