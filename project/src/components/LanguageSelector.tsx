@@ -28,7 +28,7 @@ const SelectButton = styled.button`
     }
 `;
 
-const DropdownList = styled.div<{ isOpen: boolean }>`
+const DropdownList = styled.div<{ $isOpen: boolean }>`
     position: absolute;
     left: 15px;
     right: 15px;
@@ -36,7 +36,7 @@ const DropdownList = styled.div<{ isOpen: boolean }>`
     border: 1px solid #ddd;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    display: ${(props) => (props.isOpen ? 'block' : 'none')};
+    display: ${(props) => (props.$isOpen ? 'block' : 'none')};
     z-index: 1000;
     max-width: 200px;
     margin: 0 auto;
@@ -107,7 +107,7 @@ export const LanguageSelector: React.FC = () => {
                 {currentLanguage?.name || 'Language'}
                 <span>▼</span>
             </SelectButton>
-            <DropdownList isOpen={isOpen}>
+            <DropdownList $isOpen={isOpen}>
                 {languages.map((lang) => (
                     <LangOption
                         key={lang.code}

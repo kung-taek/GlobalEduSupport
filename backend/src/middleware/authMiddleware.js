@@ -1,19 +1,21 @@
-import jwt from 'jsonwebtoken';
+const jwt = require('jsonwebtoken');
 
-export const authenticateToken = (req, res, next) => {
-    let token = req.header('Authorization');
-    if (!token) return res.status(401).send('Access Denied');
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
 
-    // Bearer 접두어가 있으면 제거
-    if (token.startsWith('Bearer ')) {
-        token = token.slice(7).trim();
-    }
+    console.log("Received Token:", token);  // ✅ 토큰 출력
 
-    try {
-        const verified = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = verified;
+    if (!token) return res.status(403).json({ error: 'Access Denied' });
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) {
+            console.log("JWT Verification Error:", err);
+            return res.status(403).json({ error: 'Access Denied' });
+        }
+        req.user = user;
         next();
-    } catch (err) {
-        res.status(400).send('Invalid Token');
-    }
+    });
 };
+
+module.exports = authenticateToken;

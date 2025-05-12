@@ -66,24 +66,8 @@ app.use((err, req, res, next) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 세션 설정
-app.use(
-    session({
-        secret: process.env.SESSION_SECRET || 'globalhelper_default_secret',
-        resave: false,
-        saveUninitialized: false,
-        cookie: {
-            secure: process.env.NODE_ENV === 'production',
-            httpOnly: true,
-            maxAge: 24 * 60 * 60 * 1000, // 24시간
-        },
-        name: 'globalhelper.sid',
-    })
-);
-
 // Passport 초기화
 app.use(passport.initialize());
-app.use(passport.session());
 
 // 라우터 등록
 app.use('/api/gpt', gptRouter);

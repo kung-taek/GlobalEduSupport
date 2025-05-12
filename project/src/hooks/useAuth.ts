@@ -13,8 +13,10 @@ export function useAuth() {
             return;
         }
         // 토큰이 있으면 사용자 정보 요청
+        console.log('Stored Token:', token);
+
         axios
-            .get('/api/auth/me', {
+            .get(`${process.env.REACT_APP_BACKEND_URL}/api/auth/me`, {
                 headers: { Authorization: `Bearer ${token}` },
                 withCredentials: true,
             })

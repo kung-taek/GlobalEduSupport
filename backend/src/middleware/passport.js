@@ -53,9 +53,16 @@ passport.use(
                 }
 
                 // JWT 토큰 생성
-                const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
-                    expiresIn: '24h',
-                });
+                const token = jwt.sign(
+                    {
+                        id: user.id,
+                        email: user.email,
+                        username: user.username,
+                        provider: user.provider,
+                    },
+                    process.env.JWT_SECRET,
+                    { expiresIn: '24h' }
+                );
 
                 return done(null, { ...user, token });
             } catch (error) {
