@@ -695,11 +695,7 @@ const App: React.FC = () => {
                 }),
             });
 
-            // 진단용 로그 추가
-            console.log('GPT API 응답 상태:', res.status);
             const data = await res.json();
-            console.log('GPT API 응답 데이터:', data);
-
             if (data.reply) {
                 setRouteRecommendation(data.reply);
             } else {
