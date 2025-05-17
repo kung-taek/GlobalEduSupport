@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import { useTranslation } from '../contexts/TranslationContext';
 import { LanguageSelector } from './LanguageSelector';
@@ -21,57 +21,26 @@ const SidebarContainer = styled.div<{ $isMobile: boolean; $isOpen: boolean; $dra
     width: 250px;
     height: ${({ $isMobile }) => ($isMobile ? 'auto' : '100vh')};
     max-height: 100vh;
-    background-color: #ffffff;
+    background: linear-gradient(135deg, #2d3436 0%, #636e72 100%);
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     padding: 20px;
     position: fixed;
     left: 0;
     top: 0;
-    z-index: 300;
+    z-index: 500;
     transition: transform 0.3s ease;
     display: flex;
     flex-direction: column;
     align-items: center;
-    transform: ${({ $isMobile, $isOpen }) => (!$isMobile ? ($isOpen ? 'translateX(0)' : 'translateX(-100%)') : 'none')};
+    transform: ${({ $isOpen, $dragY }) => ($isOpen ? `translateX(0) translateY(${$dragY}px)` : 'translateX(-100%)')};
 
     @media (max-width: 768px) {
         width: 100vw;
-        height: auto;
-        max-height: 80vh;
-        transform: ${({ $isOpen, $dragY }) =>
-            $isOpen ? `translateY(${$dragY}px)` : `translateY(calc(-100% + 40px + ${$dragY}px))`};
-        border-radius: 0 0 16px 16px;
+        height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-        position: fixed;
-        left: 0;
-        top: 0;
-        bottom: auto;
-    }
-`;
-
-const DragHandle = styled.div`
-    width: 100%;
-    height: 40px;
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: grab;
-    z-index: 301;
-    background: transparent;
-
-    &::after {
-        content: '';
-        width: 40px;
-        height: 4px;
-        background: #ddd;
-        border-radius: 2px;
-    }
-
-    &:active {
-        cursor: grabbing;
+        background: #2d3436;
     }
 `;
 
@@ -90,11 +59,14 @@ const MenuItemStyled = styled.li`
     align-items: center;
     border-radius: 8px;
     margin-bottom: 10px;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
     justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 20px;
 
     &:hover {
-        background-color: #f0f0f0;
+        background-color: rgba(255, 255, 255, 0.2);
     }
 `;
 
@@ -156,45 +128,44 @@ const AuthSection: React.FC<{ isMobile: boolean }> = ({ isMobile }) => {
 const SidebarMenu: React.FC<SidebarMenuProps> = ({ onCategorySelect, isMobile, isOpen, dragY, setIsOpen }) => {
     const { texts } = useTranslation();
     const pageTexts = texts['main'] || {};
-    const [isDragging, setIsDragging] = useState(false);
-    const startY = useRef(0);
-    const currentY = useRef(0);
-
-    const handleTouchStart = (e: React.TouchEvent) => {
-        setIsDragging(true);
-        startY.current = e.touches[0].clientY;
-        currentY.current = e.touches[0].clientY;
-    };
-
-    const handleTouchMove = (e: React.TouchEvent) => {
-        if (!isDragging) return;
-        currentY.current = e.touches[0].clientY;
-        const diff = currentY.current - startY.current;
-        if (isOpen && diff < -30) {
-            setIsOpen(false);
-        }
-    };
-
-    const handleTouchEnd = () => {
-        setIsDragging(false);
-    };
+    const kCultureTexts = texts['kculture'] || {};
 
     const menuItems: MenuItem[] = [
         { id: 'MT1', name: pageTexts['find_way'] || '길 찾기' },
-        { id: 'CT1', name: pageTexts['k_culture'] || '한국 문화' },
+        { id: 'TR1', name: kCultureTexts['transportation'] || '교통수단' },
+        { id: 'ET1', name: kCultureTexts['dining_etiquette'] || '식사 예절' },
+        { id: 'FD1', name: kCultureTexts['korean_food'] || '한국의 음식' },
+        { id: 'TRC1', name: kCultureTexts['traditional_culture'] || '전통 문화' },
     ];
+
+    const kCultureTitle = pageTexts['k_culture'] || 'K-문화';
 
     return (
         <SidebarContainer $isMobile={isMobile} $isOpen={isOpen} $dragY={dragY}>
-            {isMobile && (
-                <DragHandle onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd} />
-            )}
             <MenuList>
-                {menuItems.map((item) => (
-                    <MenuItemStyled key={item.id} onClick={() => onCategorySelect(item.id)}>
-                        {item.name}
-                    </MenuItemStyled>
-                ))}
+                {menuItems.map((item, idx) => {
+                    if (idx === 1) {
+                        return (
+                            <React.Fragment key="k-culture-header">
+                                <div style={{ borderTop: '2px solid #e0e0e0', margin: '16px 0' }} />
+                                <MenuItemStyled
+                                    as="li"
+                                    style={{ cursor: 'default', color: '#bbb', fontWeight: 'bold', background: 'none' }}
+                                >
+                                    {kCultureTitle}
+                                </MenuItemStyled>
+                                <MenuItemStyled key={item.id} onClick={() => onCategorySelect(item.id)}>
+                                    {item.name}
+                                </MenuItemStyled>
+                            </React.Fragment>
+                        );
+                    }
+                    return (
+                        <MenuItemStyled key={item.id} onClick={() => onCategorySelect(item.id)}>
+                            {item.name}
+                        </MenuItemStyled>
+                    );
+                })}
             </MenuList>
             {isMobile ? <AuthSection isMobile={isMobile} /> : null}
             <LanguageSelector />

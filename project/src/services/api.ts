@@ -1,7 +1,7 @@
 import type { UIText, Language } from '../types/translation';
 
 // API URL 설정
-const API_URL = 'http://globalhelper.p-e.kr:5000';
+export const API_URL = 'http://globalhelper.p-e.kr:5000';
 
 // UI 텍스트 목록 가져오기
 export const fetchUITexts = async (page: string, lang: Language): Promise<UIText[]> => {
@@ -74,4 +74,40 @@ export const requestTranslateAll = async (lang: string) => {
         // 에러 발생 시 빈 객체 반환하여 앱이 계속 동작하도록 함
         return {};
     }
+};
+
+// 위치 검색
+export const searchLocation = async (query: string) => {
+    const res = await fetch(`${API_URL}/api/kakao/search`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ keyword: query }),
+    });
+    if (!res.ok) throw new Error('위치 검색 실패');
+    return await res.json(); // { location: { lat, lng, ... } }
+};
+
+// 경로 검색
+export const searchRoute = async (from: string, to: string) => {
+    const res = await fetch(`${API_URL}/api/kakao/route`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ from, to }),
+    });
+    if (!res.ok) throw new Error('경로 검색 실패');
+    return await res.json();
+};
+
+// GPT+카카오맵 자연어 위치/경로
+export const askGptRoute = async (question: string) => {
+    const res = await fetch(`${API_URL}/api/gpt-kakao/gpt-location`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ message: question }),
+    });
+    if (!res.ok) throw new Error('GPT 질문 실패');
+    return await res.json(); // { answer, path, ... }
 };

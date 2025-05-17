@@ -29,9 +29,9 @@ function App() {
             .catch((err) => console.error('번역 데이터 로드 실패:', err));
     }, [lang]);
 
-    const isLocationRequest = (text) => {
-        const locationKeywords = ['가고 싶', '위치', '어디', '가는 길', '찾아'];
-        return locationKeywords.some((keyword) => text.includes(keyword));
+    const isLocationRequest = (text: string) => {
+        const keywords = ['가고 싶', '위치', '어디', '가는 길', '찾아', '경로', '출발', '도착'];
+        return keywords.some((keyword) => text.includes(keyword));
     };
 
     const sendToGPT = async () => {
@@ -165,6 +165,32 @@ function App() {
         }
     };
 
+    const handleGptSend = async () => {
+        try {
+            if (isLocationRequest(input)) {
+                // 경로/위치 관련 질문
+                const result = await sendToGPTLocation();
+                if (result && typeof result.type === 'string') {
+                    setReply(
+                        result.type === 'route' ? result.path.map((p) => p.place_name).join(', ') : result.place_name
+                    );
+                    setPath(result.type === 'route' ? result.path : []);
+                    setFrom(result.from ? result.from.place_name : '');
+                    setTo(result.to ? result.to.place_name : '');
+                    setSubmittedAddress(result.type === 'location' ? result : {});
+                } else {
+                    setReply('답변이 없습니다.');
+                }
+            } else {
+                // 일반 대화
+                await sendToGPT();
+            }
+        } catch (e) {
+            console.error('질문 처리 실패:', e);
+            setReply('질문 처리 실패');
+        }
+    };
+
     return (
         <Router>
             <div>
@@ -234,7 +260,7 @@ function App() {
                                             alignItems: 'center',
                                         }}
                                     >
-                                        <button onClick={sendToGPT} disabled={isLoading}>
+                                        <button onClick={handleGptSend} disabled={isLoading}>
                                             {translations.gptcallback || 'GPt 요청(로컬)'}
                                         </button>
                                         <button

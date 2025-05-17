@@ -40,6 +40,7 @@ const DropdownList = styled.div<{ $isOpen: boolean }>`
     z-index: 1000;
     max-width: 200px;
     margin: 0 auto;
+    bottom: 60px;
 `;
 
 const LangOption = styled.button<{ $active: boolean }>`
