@@ -4,7 +4,7 @@ import passport from 'passport';
 import dotenv from 'dotenv';
 import authenticateToken from '../middleware/authMiddleware.js';
 import jwt from 'jsonwebtoken';
-import pool from '../database/db.js';
+import { pool } from '../models/database.js';
 
 dotenv.config();
 const router = express.Router();
