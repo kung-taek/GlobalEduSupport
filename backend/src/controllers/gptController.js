@@ -25,13 +25,16 @@ export const handleGPTMessage = async (req, res) => {
             apiKey: process.env.OPENAI_API_KEY,
         });
         try {
-            // 언어 안내문 추가
-            const systemPrompt =
-                userLocale === 'ko'
-                    ? '모든 답변을 한국어로 해줘.'
-                    : userLocale === 'en'
-                    ? 'Please answer in English.'
-                    : `Please answer in ${userLocale}.`;
+            // 언어 안내문 더 상세하게
+            let systemPrompt = '';
+            if (userLocale === 'ko') {
+                systemPrompt = '모든 답변을 반드시 한국어로 해줘. 내가 한글로 질문하지 않아도 반드시 한국어로 답변해.';
+            } else if (userLocale === 'en') {
+                systemPrompt =
+                    'Please answer ONLY in English. Even if the question is in another language, always answer in English.';
+            } else {
+                systemPrompt = `Please answer ONLY in ${userLocale}. Even if the question is in another language, always answer in ${userLocale}.`;
+            }
             const newMessages = [{ role: 'system', content: systemPrompt }, ...messages];
             const completion = await openai.chat.completions.create({
                 model: 'gpt-3.5-turbo',
@@ -51,13 +54,16 @@ export const handleGPTMessage = async (req, res) => {
             apiKey: process.env.OPENAI_API_KEY,
         });
         try {
-            // 언어 안내문 추가
-            const systemPrompt =
-                userLocale === 'ko'
-                    ? '모든 답변을 한국어로 해줘.'
-                    : userLocale === 'en'
-                    ? 'Please answer in English.'
-                    : `Please answer in ${userLocale}.`;
+            // 언어 안내문 더 상세하게
+            let systemPrompt = '';
+            if (userLocale === 'ko') {
+                systemPrompt = '모든 답변을 반드시 한국어로 해줘. 내가 한글로 질문하지 않아도 반드시 한국어로 답변해.';
+            } else if (userLocale === 'en') {
+                systemPrompt =
+                    'Please answer ONLY in English. Even if the question is in another language, always answer in English.';
+            } else {
+                systemPrompt = `Please answer ONLY in ${userLocale}. Even if the question is in another language, always answer in ${userLocale}.`;
+            }
             const completion = await openai.chat.completions.create({
                 model: 'gpt-3.5-turbo',
                 messages: [
