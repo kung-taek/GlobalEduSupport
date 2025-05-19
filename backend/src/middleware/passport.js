@@ -3,6 +3,7 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import dotenv from 'dotenv';
 import { pool } from '../models/database.js';
 import jwt from 'jsonwebtoken';
+import axios from 'axios';
 
 dotenv.config();
 
@@ -20,7 +21,22 @@ passport.use(
                 const googleId = profile.id;
                 const email = profile.emails[0].value;
                 const username = profile.displayName;
-                const locale = profile._json?.locale?.split('-')[0] || null;
+                let locale = profile._json?.locale?.split('-')[0] || null;
+
+                // locale이 없으면 accessToken으로 userinfo API 직접 호출
+                if (!locale && accessToken) {
+                    try {
+                        const res = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
+                            headers: {
+                                Authorization: `Bearer ${accessToken}`,
+                            },
+                        });
+                        locale = res.data.locale ? res.data.locale.split('-')[0] : null;
+                        console.log('Google userinfo API locale:', res.data.locale);
+                    } catch (err) {
+                        console.error('Google userinfo API locale fetch error:', err.message);
+                    }
+                }
 
                 console.log('Google Strategy - User Info:', { googleId, email, username, locale });
 
