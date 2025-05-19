@@ -19,6 +19,7 @@ export const handleGPTMessage = async (req, res) => {
     } catch (e) {
         // locale 조회 실패 시 무시하고 기본값 사용
     }
+    console.log('userLocale:', userLocale);
 
     // messages 배열이 있으면 ChatGPT 방식으로 처리
     if (messages && Array.isArray(messages)) {
@@ -35,6 +36,7 @@ export const handleGPTMessage = async (req, res) => {
             // 번역 적용 (locale이 ko가 아니면 번역)
             if (userLocale !== 'ko') {
                 translatedReply = await translateText(reply, 'ko', userLocale);
+                console.log('번역 결과:', translatedReply);
             }
             // locale에 따라 reply 또는 translatedReply만 보내기
             return res.json(userLocale === 'ko' ? { reply } : { reply: translatedReply });
@@ -59,6 +61,7 @@ export const handleGPTMessage = async (req, res) => {
             // 번역 적용 (locale이 ko가 아니면 번역)
             if (userLocale !== 'ko') {
                 translatedReply = await translateText(reply, 'ko', userLocale);
+                console.log('번역 결과:', translatedReply);
             }
             // locale에 따라 reply 또는 translatedReply만 보내기
             return res.json(userLocale === 'ko' ? { reply } : { reply: translatedReply });
