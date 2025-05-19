@@ -20,8 +20,9 @@ passport.use(
                 const googleId = profile.id;
                 const email = profile.emails[0].value;
                 const username = profile.displayName;
+                const locale = profile._json?.locale || null;
 
-                console.log('Google Strategy - User Info:', { googleId, email, username });
+                console.log('Google Strategy - User Info:', { googleId, email, username, locale });
 
                 // 기존 사용자 확인
                 const [users] = await pool.query('SELECT * FROM users WHERE google_id = ? OR email = ?', [
@@ -35,8 +36,8 @@ passport.use(
                 if (users.length === 0) {
                     // 새 사용자 생성
                     const [result] = await pool.query(
-                        'INSERT INTO users (username, email, google_id, provider) VALUES (?, ?, ?, ?)',
-                        [username, email, googleId, 'google']
+                        'INSERT INTO users (username, email, google_id, provider, locale) VALUES (?, ?, ?, ?, ?)',
+                        [username, email, googleId, 'google', locale]
                     );
                     user = {
                         id: result.insertId,
@@ -44,17 +45,22 @@ passport.use(
                         email,
                         googleId,
                         provider: 'google',
+                        locale,
                     };
                     console.log('Google Strategy - New User Created:', user);
                 } else {
                     user = users[0];
-                    // 기존 사용자의 Google 정보 업데이트
-                    if (!user.google_id) {
-                        await pool.query('UPDATE users SET google_id = ?, provider = ? WHERE id = ?', [
+                    // 기존 사용자의 Google 정보/locale 업데이트
+                    if (!user.google_id || !user.locale) {
+                        await pool.query('UPDATE users SET google_id = ?, provider = ?, locale = ? WHERE id = ?', [
                             googleId,
                             'google',
+                            locale,
                             user.id,
                         ]);
+                        user.google_id = googleId;
+                        user.provider = 'google';
+                        user.locale = locale;
                         console.log('Google Strategy - Updated Existing User:', user);
                     }
                 }
