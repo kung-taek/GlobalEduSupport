@@ -25,17 +25,8 @@ export const handleGPTMessage = async (req, res) => {
             apiKey: process.env.OPENAI_API_KEY,
         });
         try {
-            // 언어 안내문 더 자연스럽고 명확하게
-            let systemPrompt = '';
-            if (userLocale === 'ko') {
-                systemPrompt =
-                    '한국어나 영어 혹은 그 외 언어로 질문하더라도 반드시 언어코드인 ko(한국어)에 맞게 답변해.';
-            } else if (userLocale === 'en') {
-                systemPrompt =
-                    'Whether I ask in Korean, English, or any other language, always answer in language code en (English).';
-            } else {
-                systemPrompt = `Whether I ask in Korean, English, or any other language, always answer in language code ${userLocale}.`;
-            }
+            // 언어 안내문을 locale에 맞게 통일
+            const systemPrompt = `한국어나 영어 혹은 그 외 언어로 질문하더라도 반드시 언어코드인 ${userLocale}에 맞게 답변해.`;
             const newMessages = [{ role: 'system', content: systemPrompt }, ...messages];
             const completion = await openai.chat.completions.create({
                 model: 'gpt-3.5-turbo',
@@ -55,17 +46,8 @@ export const handleGPTMessage = async (req, res) => {
             apiKey: process.env.OPENAI_API_KEY,
         });
         try {
-            // 언어 안내문 더 자연스럽고 명확하게
-            let systemPrompt = '';
-            if (userLocale === 'ko') {
-                systemPrompt =
-                    '한국어나 영어 혹은 그 외 언어로 질문하더라도 반드시 언어코드인 ko(한국어)에 맞게 답변해.';
-            } else if (userLocale === 'en') {
-                systemPrompt =
-                    'Whether I ask in Korean, English, or any other language, always answer in language code en (English).';
-            } else {
-                systemPrompt = `Whether I ask in Korean, English, or any other language, always answer in language code ${userLocale}.`;
-            }
+            // 언어 안내문을 locale에 맞게 통일
+            const systemPrompt = `한국어나 영어 혹은 그 외 언어로 질문하더라도 반드시 언어코드인 ${userLocale}에 맞게 답변해.`;
             const completion = await openai.chat.completions.create({
                 model: 'gpt-3.5-turbo',
                 messages: [
