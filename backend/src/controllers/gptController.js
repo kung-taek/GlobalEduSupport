@@ -1,6 +1,7 @@
 import { OpenAI } from 'openai';
 import dotenv from 'dotenv';
 import { pool } from '../models/database.js';
+import { translateText } from '../utils/translate.js';
 
 dotenv.config();
 
@@ -25,14 +26,16 @@ export const handleGPTMessage = async (req, res) => {
             apiKey: process.env.OPENAI_API_KEY,
         });
         try {
-            // 언어 안내문을 locale에 맞게 통일
-            const systemPrompt = `한국어나 영어 혹은 그 외 언어로 질문하더라도 질문 언어와 상관없이 반드시 언어코드인 ${userLocale}에 맞게 답변해.`;
-            const newMessages = [{ role: 'system', content: systemPrompt }, ...messages];
             const completion = await openai.chat.completions.create({
                 model: 'gpt-3.5-turbo',
-                messages: newMessages,
+                messages: messages,
             });
-            const reply = completion.choices[0].message.content;
+            let reply = completion.choices[0].message.content;
+            // 번역 적용 (locale이 ko가 아니면 번역)
+            if (userLocale !== 'ko') {
+                const translated = await translateText(reply, 'ko', userLocale);
+                if (translated) reply = translated;
+            }
             return res.json({ reply });
         } catch (error) {
             console.error('GPT API 오류:', error);
@@ -46,16 +49,16 @@ export const handleGPTMessage = async (req, res) => {
             apiKey: process.env.OPENAI_API_KEY,
         });
         try {
-            // 언어 안내문을 locale에 맞게 통일
-            const systemPrompt = `한국어나 영어 혹은 그 외 언어로 질문하더라도 반드시 언어코드인 ${userLocale}에 맞게 답변해.`;
             const completion = await openai.chat.completions.create({
                 model: 'gpt-3.5-turbo',
-                messages: [
-                    { role: 'system', content: systemPrompt },
-                    { role: 'user', content: message },
-                ],
+                messages: [{ role: 'user', content: message }],
             });
-            const reply = completion.choices[0].message.content;
+            let reply = completion.choices[0].message.content;
+            // 번역 적용 (locale이 ko가 아니면 번역)
+            if (userLocale !== 'ko') {
+                const translated = await translateText(reply, 'ko', userLocale);
+                if (translated) reply = translated;
+            }
             return res.json({ reply });
         } catch (error) {
             console.error('GPT API 오류:', error);
