@@ -36,7 +36,8 @@ export const handleGPTMessage = async (req, res) => {
             if (userLocale !== 'ko') {
                 translatedReply = await translateText(reply, 'ko', userLocale);
             }
-            return res.json({ reply, translatedReply });
+            // locale에 따라 reply 또는 translatedReply만 보내기
+            return res.json(userLocale === 'ko' ? { reply } : { reply: translatedReply });
         } catch (error) {
             console.error('GPT API 오류:', error);
             return res.status(500).json({ error: 'GPT 응답 중 에러 발생' });
@@ -59,7 +60,8 @@ export const handleGPTMessage = async (req, res) => {
             if (userLocale !== 'ko') {
                 translatedReply = await translateText(reply, 'ko', userLocale);
             }
-            return res.json({ reply, translatedReply });
+            // locale에 따라 reply 또는 translatedReply만 보내기
+            return res.json(userLocale === 'ko' ? { reply } : { reply: translatedReply });
         } catch (error) {
             console.error('GPT API 오류:', error);
             return res.status(500).json({ error: 'GPT 응답 중 에러 발생' });
