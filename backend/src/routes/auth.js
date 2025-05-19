@@ -18,7 +18,7 @@ router.post('/login', login);
 router.get(
     '/google',
     passport.authenticate('google', {
-        scope: ['profile', 'email'],
+        scope: ['profile', 'email', 'https://www.googleapis.com/auth/userinfo.profile'],
         prompt: 'select_account',
         accessType: 'offline',
     })
