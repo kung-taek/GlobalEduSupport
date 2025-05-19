@@ -76,10 +76,12 @@ router.get('/me', authenticateToken, async (req, res) => {
 // 사용자 locale 업데이트 API
 router.post('/user/update-locale', authenticateToken, async (req, res) => {
     const { locale } = req.body;
+    console.log('update-locale 요청:', { userId: req.user.id, locale });
     try {
         await pool.query('UPDATE users SET locale = ? WHERE id = ?', [locale, req.user.id]);
         res.json({ success: true });
     } catch (err) {
+        console.error('locale 업데이트 실패:', err);
         res.status(500).json({ error: 'locale 업데이트 실패' });
     }
 });
