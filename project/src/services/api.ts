@@ -101,12 +101,12 @@ export const searchRoute = async (from: string, to: string) => {
 };
 
 // GPT+카카오맵 자연어 위치/경로
-export const askGptRoute = async (question: string) => {
+export const askGptRoute = async (question: string, currentLang: string) => {
     const res = await fetch(`${API_URL}/api/gpt-kakao/gpt-location`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ message: question }),
+        body: JSON.stringify({ message: question, locale: currentLang }),
     });
     if (!res.ok) throw new Error('GPT 질문 실패');
     return await res.json(); // { answer, path, ... }

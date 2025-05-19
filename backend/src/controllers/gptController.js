@@ -6,10 +6,10 @@ import { translateText } from '../utils/translate.js';
 dotenv.config();
 
 export const handleGPTMessage = async (req, res) => {
-    const { messages, message } = req.body;
-    let userLocale = 'ko';
+    const { messages, message, locale: bodyLocale } = req.body;
+    let userLocale = bodyLocale || 'ko';
     try {
-        // JWT 인증 미들웨어가 req.user를 세팅했다고 가정
+        // 2순위: 로그인 사용자는 DB에서 locale 조회
         if (req.user && req.user.email) {
             const [users] = await pool.query('SELECT locale FROM users WHERE email = ?', [req.user.email]);
             if (users.length > 0 && users[0].locale) {
