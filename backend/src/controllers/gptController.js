@@ -31,12 +31,12 @@ export const handleGPTMessage = async (req, res) => {
                 messages: messages,
             });
             let reply = completion.choices[0].message.content;
+            let translatedReply = null;
             // 번역 적용 (locale이 ko가 아니면 번역)
             if (userLocale !== 'ko') {
-                const translated = await translateText(reply, 'ko', userLocale);
-                if (translated) reply = translated;
+                translatedReply = await translateText(reply, 'ko', userLocale);
             }
-            return res.json({ reply });
+            return res.json({ reply, translatedReply });
         } catch (error) {
             console.error('GPT API 오류:', error);
             return res.status(500).json({ error: 'GPT 응답 중 에러 발생' });
@@ -54,12 +54,12 @@ export const handleGPTMessage = async (req, res) => {
                 messages: [{ role: 'user', content: message }],
             });
             let reply = completion.choices[0].message.content;
+            let translatedReply = null;
             // 번역 적용 (locale이 ko가 아니면 번역)
             if (userLocale !== 'ko') {
-                const translated = await translateText(reply, 'ko', userLocale);
-                if (translated) reply = translated;
+                translatedReply = await translateText(reply, 'ko', userLocale);
             }
-            return res.json({ reply });
+            return res.json({ reply, translatedReply });
         } catch (error) {
             console.error('GPT API 오류:', error);
             return res.status(500).json({ error: 'GPT 응답 중 에러 발생' });

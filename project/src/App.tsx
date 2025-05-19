@@ -725,7 +725,9 @@ const App: React.FC = () => {
             });
 
             const data = await res.json();
-            if (data.reply) {
+            if (data.translatedReply) {
+                setRouteRecommendation(data.translatedReply);
+            } else if (data.reply) {
                 setRouteRecommendation(data.reply);
             } else {
                 throw new Error('No reply in response');
