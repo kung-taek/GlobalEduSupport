@@ -56,8 +56,18 @@ router.get('/test', (req, res) => {
 // 내 정보 조회 (로그인 상태 확인용)
 router.get('/me', authenticateToken, async (req, res) => {
     try {
-        // req.user는 JWT에서 복호화된 정보 (id, email 등)
-        res.json({ id: req.user.id, email: req.user.email, username: req.user.username });
+        // DB에서 전체 정보 조회
+        const [users] = await pool.query('SELECT * FROM users WHERE id = ?', [req.user.id]);
+        if (users.length === 0) {
+            return res.status(404).json({ error: '사용자를 찾을 수 없습니다.' });
+        }
+        const user = users[0];
+        res.json({
+            id: user.id,
+            email: user.email,
+            username: user.username,
+            locale: user.locale,
+        });
     } catch (err) {
         res.status(500).json({ error: '사용자 정보를 불러올 수 없습니다.' });
     }
