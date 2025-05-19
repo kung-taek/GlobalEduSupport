@@ -31,10 +31,11 @@ passport.use(
                                 Authorization: `Bearer ${accessToken}`,
                             },
                         });
+                        console.log('Google userinfo API 전체 응답:', res.data);
                         locale = res.data.locale ? res.data.locale.split('-')[0] : null;
                         console.log('Google userinfo API locale:', res.data.locale);
                     } catch (err) {
-                        console.error('Google userinfo API locale fetch error:', err.message);
+                        console.error('Google userinfo API locale fetch error:', err.message, err.response?.data);
                     }
                 }
 
