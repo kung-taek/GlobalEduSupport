@@ -20,7 +20,7 @@ passport.use(
                 const googleId = profile.id;
                 const email = profile.emails[0].value;
                 const username = profile.displayName;
-                const locale = profile._json?.locale?.split('-')[0] || 'ko';
+                const locale = profile._json?.locale?.split('-')[0] || null;
 
                 console.log('Google Strategy - User Info:', { googleId, email, username, locale });
 
