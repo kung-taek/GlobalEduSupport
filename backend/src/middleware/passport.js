@@ -21,25 +21,8 @@ passport.use(
                 const googleId = profile.id;
                 const email = profile.emails[0].value;
                 const username = profile.displayName;
-                let locale = profile._json?.locale?.split('-')[0] || null;
 
-                // locale이 없으면 accessToken으로 userinfo API 직접 호출
-                if (!locale && accessToken) {
-                    try {
-                        const res = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
-                            headers: {
-                                Authorization: `Bearer ${accessToken}`,
-                            },
-                        });
-                        console.log('Google userinfo API 전체 응답:', res.data);
-                        locale = res.data.locale ? res.data.locale.split('-')[0] : null;
-                        console.log('Google userinfo API locale:', res.data.locale);
-                    } catch (err) {
-                        console.error('Google userinfo API locale fetch error:', err.message, err.response?.data);
-                    }
-                }
-
-                console.log('Google Strategy - User Info:', { googleId, email, username, locale });
+                console.log('Google Strategy - User Info:', { googleId, email, username });
 
                 // 기존 사용자 확인
                 const [users] = await pool.query('SELECT * FROM users WHERE google_id = ? OR email = ?', [
@@ -54,7 +37,7 @@ passport.use(
                     // 새 사용자 생성
                     const [result] = await pool.query(
                         'INSERT INTO users (username, email, google_id, provider, locale) VALUES (?, ?, ?, ?, ?)',
-                        [username, email, googleId, 'google', locale]
+                        [username, email, googleId, 'google', 'ko']
                     );
                     user = {
                         id: result.insertId,
@@ -62,22 +45,15 @@ passport.use(
                         email,
                         googleId,
                         provider: 'google',
-                        locale: locale,
+                        locale: 'ko',
                     };
                     console.log('Google Strategy - New User Created:', user);
                 } else {
                     user = users[0];
-                    // 기존 사용자의 Google 정보/locale 업데이트
-                    if (!user.google_id || !user.locale) {
-                        await pool.query('UPDATE users SET google_id = ?, provider = ?, locale = ? WHERE id = ?', [
-                            googleId,
-                            'google',
-                            locale,
-                            user.id,
-                        ]);
+                    // 기존 사용자의 Google 정보 업데이트
+                    if (!user.google_id) {
+                        await pool.query('UPDATE users SET google_id = ? WHERE id = ?', [googleId, user.id]);
                         user.google_id = googleId;
-                        user.provider = 'google';
-                        user.locale = locale;
                         console.log('Google Strategy - Updated Existing User:', user);
                     }
                 }

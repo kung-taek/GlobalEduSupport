@@ -73,12 +73,12 @@ router.get('/me', authenticateToken, async (req, res) => {
     }
 });
 
-// 사용자 locale 업데이트 API
+// 사용자 locale 업데이트 API (이메일 기준)
 router.post('/user/update-locale', authenticateToken, async (req, res) => {
-    const { locale } = req.body;
-    console.log('update-locale 요청:', { userId: req.user.id, locale });
+    const { locale, email } = req.body;
+    if (!email) return res.status(400).json({ error: '이메일이 필요합니다.' });
     try {
-        await pool.query('UPDATE users SET locale = ? WHERE id = ?', [locale, req.user.id]);
+        await pool.query('UPDATE users SET locale = ? WHERE email = ?', [locale, email]);
         res.json({ success: true });
     } catch (err) {
         console.error('locale 업데이트 실패:', err);
