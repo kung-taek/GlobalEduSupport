@@ -26,7 +26,7 @@ export const handleGPTMessage = async (req, res) => {
         });
         try {
             // 언어 안내문을 locale에 맞게 통일
-            const systemPrompt = `한국어나 영어 혹은 그 외 언어로 질문하더라도 질문 언어와 상관없이이 반드시 언어코드인 ${userLocale}에 맞게 답변해.`;
+            const systemPrompt = `한국어나 영어 혹은 그 외 언어로 질문하더라도 질문 언어와 상관없이 반드시 언어코드인 ${userLocale}에 맞게 답변해.`;
             const newMessages = [{ role: 'system', content: systemPrompt }, ...messages];
             const completion = await openai.chat.completions.create({
                 model: 'gpt-3.5-turbo',
