@@ -4,7 +4,7 @@ import axios from 'axios';
 const BACKEND_URL = 'http://globalhelper.p-e.kr:5000';
 
 export function useAuth() {
-    const [user, setUser] = useState<{ username?: string } | null>(null);
+    const [user, setUser] = useState<{ username?: string; email?: string } | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {

@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useTranslation } from '../contexts/TranslationContext';
+import { useAuth } from '../hooks/useAuth';
+import axios from 'axios';
 
 const LanguageSelectorContainer = styled.div`
     margin-top: 20px;
@@ -98,7 +100,28 @@ const languages = [
 
 export const LanguageSelector: React.FC = () => {
     const { currentLang, setLanguage } = useTranslation();
+    const { user } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
+
+    const handleLangChange = async (langCode: string) => {
+        setLanguage(langCode);
+        setIsOpen(false);
+        if (user && user.email) {
+            try {
+                await axios.post(
+                    'http://globalhelper.p-e.kr:5000/api/auth/user/update-locale',
+                    { locale: langCode, email: user.email },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem('token')}`,
+                        },
+                    }
+                );
+            } catch (err) {
+                console.error('언어 설정 서버 업데이트 실패:', err);
+            }
+        }
+    };
 
     const currentLanguage = languages.find((lang) => lang.code === currentLang);
 
@@ -113,10 +136,7 @@ export const LanguageSelector: React.FC = () => {
                     <LangOption
                         key={lang.code}
                         $active={currentLang === lang.code}
-                        onClick={() => {
-                            setLanguage(lang.code);
-                            setIsOpen(false);
-                        }}
+                        onClick={() => handleLangChange(lang.code)}
                     >
                         {lang.name}
                     </LangOption>

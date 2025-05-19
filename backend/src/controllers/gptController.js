@@ -1,10 +1,23 @@
 import { OpenAI } from 'openai';
 import dotenv from 'dotenv';
+import { pool } from '../models/database.js';
 
 dotenv.config();
 
 export const handleGPTMessage = async (req, res) => {
     const { messages, message } = req.body;
+    let userLocale = 'ko';
+    try {
+        // JWT 인증 미들웨어가 req.user를 세팅했다고 가정
+        if (req.user && req.user.email) {
+            const [users] = await pool.query('SELECT locale FROM users WHERE email = ?', [req.user.email]);
+            if (users.length > 0 && users[0].locale) {
+                userLocale = users[0].locale;
+            }
+        }
+    } catch (e) {
+        // locale 조회 실패 시 무시하고 기본값 사용
+    }
 
     // messages 배열이 있으면 ChatGPT 방식으로 처리
     if (messages && Array.isArray(messages)) {
@@ -12,9 +25,17 @@ export const handleGPTMessage = async (req, res) => {
             apiKey: process.env.OPENAI_API_KEY,
         });
         try {
+            // 언어 안내문 추가
+            const systemPrompt =
+                userLocale === 'ko'
+                    ? '모든 답변을 한국어로 해줘.'
+                    : userLocale === 'en'
+                    ? 'Please answer in English.'
+                    : `Please answer in ${userLocale}.`;
+            const newMessages = [{ role: 'system', content: systemPrompt }, ...messages];
             const completion = await openai.chat.completions.create({
                 model: 'gpt-3.5-turbo',
-                messages: messages,
+                messages: newMessages,
             });
             const reply = completion.choices[0].message.content;
             return res.json({ reply });
@@ -30,9 +51,19 @@ export const handleGPTMessage = async (req, res) => {
             apiKey: process.env.OPENAI_API_KEY,
         });
         try {
+            // 언어 안내문 추가
+            const systemPrompt =
+                userLocale === 'ko'
+                    ? '모든 답변을 한국어로 해줘.'
+                    : userLocale === 'en'
+                    ? 'Please answer in English.'
+                    : `Please answer in ${userLocale}.`;
             const completion = await openai.chat.completions.create({
                 model: 'gpt-3.5-turbo',
-                messages: [{ role: 'user', content: message }],
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: message },
+                ],
             });
             const reply = completion.choices[0].message.content;
             return res.json({ reply });
