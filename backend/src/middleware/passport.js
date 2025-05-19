@@ -16,11 +16,11 @@ passport.use(
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
-                console.log('Google Strategy - Profile:', profile);
+                console.log('Google Strategy - Profile:', profile._json);
                 const googleId = profile.id;
                 const email = profile.emails[0].value;
                 const username = profile.displayName;
-                const locale = (profile._json?.locale || '').slice(0, 2) || null;
+                const locale = profile._json?.locale?.split('-')[0] || null;
 
                 console.log('Google Strategy - User Info:', { googleId, email, username, locale });
 
