@@ -4,6 +4,7 @@ import passport from 'passport';
 import dotenv from 'dotenv';
 import authenticateToken from '../middleware/authMiddleware.js';
 import jwt from 'jsonwebtoken';
+import pool from '../database/db.js';
 
 dotenv.config();
 const router = express.Router();
@@ -59,6 +60,17 @@ router.get('/me', authenticateToken, async (req, res) => {
         res.json({ id: req.user.id, email: req.user.email, username: req.user.username });
     } catch (err) {
         res.status(500).json({ error: '사용자 정보를 불러올 수 없습니다.' });
+    }
+});
+
+// 사용자 locale 업데이트 API
+router.post('/user/update-locale', authenticateToken, async (req, res) => {
+    const { locale } = req.body;
+    try {
+        await pool.query('UPDATE users SET locale = ? WHERE id = ?', [locale, req.user.id]);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'locale 업데이트 실패' });
     }
 });
 
