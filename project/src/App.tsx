@@ -291,7 +291,7 @@ const SearchBoxUI: React.FC<{
     setShowRecommendationPanel,
     panelRef,
 }) => {
-    const { texts, isLoading } = useTranslation();
+    const { texts, isLoading, currentLang } = useTranslation();
     const [tab, setTab] = useState(0);
     const [location, setLocation] = useState('');
     const [start, setStart] = useState('');
@@ -345,7 +345,21 @@ const SearchBoxUI: React.FC<{
 
     const handleLocationSearch = async () => {
         try {
-            const result = await searchLocation(location);
+            // 먼저 GPT를 통해 한국어로 번역
+            const translateRes = await fetch(`${API_URL}/api/gpt`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    message: `다음 장소명을 한국어로 번역해줘: ${location}`,
+                    locale: 'ko',
+                }),
+            });
+            const translateData = await translateRes.json();
+            const translatedLocation = translateData.reply || location;
+
+            // 번역된 장소명으로 검색
+            const result = await searchLocation(translatedLocation);
             if (result.location) {
                 setMapAddress({
                     lat: result.location.y,
@@ -367,11 +381,33 @@ const SearchBoxUI: React.FC<{
             return;
         }
         try {
-            const result = await searchRoute(start, end);
+            // 출발지와 도착지를 한국어로 번역
+            const translateRes = await fetch(`${API_URL}/api/gpt`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    message: `다음 장소명들을 한국어로 번역해줘. 출발지: ${start}, 도착지: ${end}`,
+                    locale: 'ko',
+                }),
+            });
+            const translateData = await translateRes.json();
+            const translatedText = translateData.reply || '';
+
+            // 번역된 텍스트에서 출발지와 도착지 추출
+            const places = extractPlacesFromText(translatedText);
+            if (!places) {
+                alert('장소를 번역할 수 없습니다.');
+                return;
+            }
+            const [translatedStart, translatedEnd] = places;
+
+            // 번역된 장소명으로 경로 검색
+            const result = await searchRoute(translatedStart, translatedEnd);
             if (result.path && result.path.length > 0) {
                 setMapPath(result.path);
                 setMapAddress(null);
-                fetchRouteRecommendation(start, end);
+                fetchRouteRecommendation(translatedStart, translatedEnd);
             } else {
                 alert('경로를 찾을 수 없습니다.');
             }
@@ -391,88 +427,49 @@ const SearchBoxUI: React.FC<{
 
     const handleGptSend = async () => {
         try {
-            let result: any;
-            if (isLocationRequest(question)) {
-                result = await askGptRoute(question);
-                if (result && typeof result.answer === 'string') {
-                    setGptAnswer(result.answer);
-                    // 답변에서 장소명 2개 추출
-                    const places = extractPlacesFromText(result.answer);
-                    setExtractedPlaces(places);
-                } else if (result && result.error) {
-                    setGptAnswer(result.error);
-                    setExtractedPlaces(null);
-                } else {
-                    setGptAnswer('답변이 없습니다.');
-                    setExtractedPlaces(null);
-                }
-                if (result.type === 'route' && result.path) {
-                    setGptRoutePath(result.path);
-                    setShowGptRoute(false);
-                } else if (result.type === 'location' && result.lat && result.lng) {
-                    setMapAddress({
-                        lat: result.lat,
-                        lng: result.lng,
-                        name: result.place_name,
-                    });
-                    setMapPath([]);
-                    setGptRoutePath([]);
-                    setShowGptRoute(false);
-                } else {
-                    setGptRoutePath([]);
-                    setShowGptRoute(false);
-                }
-            } else {
-                // 일반 대화
-                const res = await fetch(`${API_URL}/api/gpt`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({ message: question }),
-                });
-                const data = await res.json();
-                setGptAnswer(data.reply || '답변이 없습니다.');
-                setGptRoutePath([]);
-                setShowGptRoute(false);
-                setExtractedPlaces(null);
-            }
-        } catch (e: any) {
-            if (e?.response?.data?.error) {
-                setGptAnswer(e.response.data.error);
-            } else {
-                setGptAnswer('질문 처리 실패');
-            }
+            // 항상 자연어 답변(번역 포함)만 받음
+            const res = await fetch(`${API_URL}/api/gpt`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ message: question, locale: currentLang }),
+            });
+            const data = await res.json();
+            setGptAnswer(data.reply || '답변이 없습니다.');
+            setExtractedPlaces(extractPlacesFromText(data.reply || ''));
             setGptRoutePath([]);
             setShowGptRoute(false);
+        } catch (e: any) {
+            setGptAnswer('질문 처리 실패');
             setExtractedPlaces(null);
+            setGptRoutePath([]);
+            setShowGptRoute(false);
         }
     };
 
     const handleShowRoute = async () => {
-        if (gptRoutePath && gptRoutePath.length > 0) {
-            setShowGptRoute(true);
-            if (extractedPlaces) {
-                const [from, to] = extractedPlaces;
-                fetchRouteRecommendation(from, to);
-            }
-            return;
-        }
-        if (extractedPlaces) {
-            const [from, to] = extractedPlaces;
-            try {
-                const result = await searchRoute(from, to);
-                if (result.path && result.path.length > 0) {
-                    setGptRoutePath(result.path);
-                    setShowGptRoute(true);
-                    fetchRouteRecommendation(from, to);
-                } else {
-                    alert('경로를 찾을 수 없습니다.');
+        // 현재 답변에서 장소 추출
+        if (gptAnswer) {
+            const places = extractPlacesFromText(gptAnswer);
+            if (places) {
+                const [from, to] = places;
+                try {
+                    const result = await searchRoute(from, to);
+                    if (result.path && result.path.length > 0) {
+                        setGptRoutePath(result.path);
+                        setShowGptRoute(true);
+                        fetchRouteRecommendation(from, to);
+                    } else {
+                        alert('경로를 찾을 수 없습니다.');
+                    }
+                } catch (e) {
+                    alert('경로 검색 실패');
                 }
-            } catch (e) {
-                alert('경로 검색 실패');
+            } else {
+                alert('장소를 추출할 수 없습니다.');
             }
         } else {
-            alert('장소를 추출할 수 없습니다.');
+            alert('답변이 없습니다.');
         }
     };
 
