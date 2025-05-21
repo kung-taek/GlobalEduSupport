@@ -1,11 +1,13 @@
 import express from 'express';
 import * as postController from '../controllers/postController.js';
 import authenticateToken from '../middleware/authMiddleware.js';
+import multer from 'multer';
+const upload = multer({ dest: 'uploads/' });
 
 const router = express.Router();
 
 // 게시글 작성
-router.post('/', authenticateToken, postController.createPost);
+router.post('/', authenticateToken, upload.single('image'), postController.createPost);
 
 // 게시글 수정
 router.put('/:id', authenticateToken, postController.updatePost);

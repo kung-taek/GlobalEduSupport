@@ -150,13 +150,19 @@ const PostForm: React.FC = () => {
             formData.append('board_type', boardType);
             if (image) formData.append('image', image);
 
+            const token = localStorage.getItem('token');
+            const headers = {
+                'Content-Type': 'multipart/form-data',
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            };
+
             if (isEdit) {
                 await axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/posts/${id}`, formData, {
-                    headers: { 'Content-Type': 'multipart/form-data' },
+                    headers,
                 });
             } else {
                 await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/posts`, formData, {
-                    headers: { 'Content-Type': 'multipart/form-data' },
+                    headers,
                 });
             }
             navigate('/community');
