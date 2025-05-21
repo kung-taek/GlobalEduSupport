@@ -171,7 +171,7 @@ export const createComment = async (req, res) => {
 };
 
 // 댓글 수정
-exports.updateComment = async (req, res) => {
+export const updateComment = async (req, res) => {
     try {
         const { content } = req.body;
         const commentId = req.params.id;
@@ -192,7 +192,7 @@ exports.updateComment = async (req, res) => {
 };
 
 // 댓글 삭제
-exports.deleteComment = async (req, res) => {
+export const deleteComment = async (req, res) => {
     try {
         const commentId = req.params.id;
         const user_id = req.user.id;
@@ -212,7 +212,7 @@ exports.deleteComment = async (req, res) => {
 };
 
 // 레벨업 체크
-exports.checkLevelUp = async (req, res) => {
+export const checkLevelUp = async (req, res) => {
     try {
         const user_id = req.user.id;
 
