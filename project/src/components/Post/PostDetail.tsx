@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../hooks/useAuth';
+import { useTranslation } from '../../contexts/TranslationContext';
 
 const Container = styled.div`
     padding: 20px;
@@ -113,6 +114,7 @@ interface Post {
     likes: number;
     created_at: string;
     username: string;
+    level: number;
 }
 
 interface Comment {
@@ -127,6 +129,8 @@ const PostDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { user } = useAuth();
+    const { texts } = useTranslation();
+    const mainTexts = texts['main'] || {};
     const [post, setPost] = useState<Post | null>(null);
     const [comments, setComments] = useState<Comment[]>([]);
     const [newComment, setNewComment] = useState('');
@@ -200,7 +204,7 @@ const PostDetail: React.FC = () => {
         }
     };
 
-    if (!post) return <div>로딩 중...</div>;
+    if (!post) return <div style={{ textAlign: 'center', color: '#aaa', padding: '60px 0' }}>로딩중...</div>;
 
     return (
         <Container>
@@ -208,10 +212,16 @@ const PostDetail: React.FC = () => {
                 <PostHeader>
                     <PostTitle>{post.title}</PostTitle>
                     <PostInfo>
-                        <span>작성자: {post.username}</span>
-                        <span>조회수: {post.views}</span>
-                        <span>추천: {post.likes}</span>
-                        <span>작성일: {new Date(post.created_at).toLocaleDateString()}</span>
+                        <span>
+                            {post.username} <span style={{ color: '#0078ff', fontWeight: 700 }}>Lv.{post.level}</span>
+                        </span>
+                        <span>
+                            {mainTexts['lookcount'] || '조회수'} {post.views}
+                        </span>
+                        <span>
+                            {mainTexts['postrespect'] || '추천'} {post.likes}
+                        </span>
+                        <span>{new Date(post.created_at).toLocaleString('ko-KR', { hour12: false })}</span>
                     </PostInfo>
                 </PostHeader>
                 <PostContent>{post.content}</PostContent>

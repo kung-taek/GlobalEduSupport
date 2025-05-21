@@ -33,6 +33,9 @@ router.put('/comments/:id', authenticateToken, postController.updateComment);
 // 댓글 삭제
 router.delete('/comments/:id', authenticateToken, postController.deleteComment);
 
+// 댓글 조회
+router.get('/:id/comments', postController.getComments);
+
 // 레벨업 체크
 router.get('/check-level', authenticateToken, postController.checkLevelUp);
 

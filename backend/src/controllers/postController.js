@@ -264,3 +264,22 @@ export const getPost = async (req, res) => {
         res.status(500).json({ message: '게시글 상세 조회 중 오류가 발생했습니다.' });
     }
 };
+
+// 댓글 조회
+export const getComments = async (req, res) => {
+    try {
+        const postId = req.params.id;
+        const [comments] = await pool.query(
+            `SELECT c.*, u.username, u.level
+             FROM comments c
+             JOIN users u ON c.user_id = u.id
+             WHERE c.post_id = ?
+             ORDER BY c.created_at ASC`,
+            [postId]
+        );
+        res.json(comments);
+    } catch (error) {
+        console.error('댓글 조회 에러:', error);
+        res.status(500).json({ message: '댓글 조회 중 오류가 발생했습니다.' });
+    }
+};
