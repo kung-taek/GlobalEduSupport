@@ -210,6 +210,7 @@ interface Post {
     created_at: string;
     username: string;
     level: number;
+    image_url?: string;
 }
 
 interface Comment {
@@ -418,6 +419,15 @@ const PostDetail: React.FC = () => {
                         </InfoCell>
                     </HeaderRow>
                 </PostHeader>
+                {post.image_url && (
+                    <div style={{ marginBottom: 18 }}>
+                        <img
+                            src={post.image_url}
+                            alt="post"
+                            style={{ maxWidth: '100%', maxHeight: 320, borderRadius: 8, border: '1px solid #eee' }}
+                        />
+                    </div>
+                )}
                 <PostContent>{post.content}</PostContent>
             </PostContainer>
 

@@ -119,7 +119,7 @@ const PostForm: React.FC = () => {
     const [image, setImage] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const isEdit = !!id;
-    const { user } = useAuth();
+    const { user, loading } = useAuth();
 
     useEffect(() => {
         if (isEdit) {
@@ -128,10 +128,10 @@ const PostForm: React.FC = () => {
     }, [id]);
 
     useEffect(() => {
-        if (!user) {
+        if (!loading && !user) {
             navigate('/login');
         }
-    }, [user, navigate]);
+    }, [user, loading, navigate]);
 
     const fetchPost = async () => {
         try {

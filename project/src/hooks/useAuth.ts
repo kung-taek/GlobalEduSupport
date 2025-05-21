@@ -25,12 +25,13 @@ export function useAuth() {
             .then((res: any) => {
                 console.log('User data received:', res.data);
                 setUser(res.data);
+                setLoading(false);
             })
             .catch((error) => {
                 console.error('Error fetching user data:', error);
                 setUser(null);
+                setLoading(false);
             });
-        setLoading(false);
     }, []);
 
     const login = () => {

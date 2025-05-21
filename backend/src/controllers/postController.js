@@ -14,8 +14,12 @@ async function checkLevelUpForUser(user_id) {
 // 게시글 작성
 export const createPost = async (req, res) => {
     try {
-        const { title, content, board_type, image_url } = req.body;
+        const { title, content, board_type } = req.body;
         const user_id = req.user.id; // 인증된 사용자의 ID
+        let image_url = null;
+        if (req.file) {
+            image_url = `/uploads/${req.file.filename}`;
+        }
 
         const query = `
             INSERT INTO posts (user_id, board_type, title, content, image_url)
