@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useTranslation } from '../../contexts/TranslationContext';
+import { useAuth } from '../../hooks/useAuth';
 
 interface Post {
     id: number;
@@ -118,12 +119,19 @@ const PostForm: React.FC = () => {
     const [image, setImage] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const isEdit = !!id;
+    const { user } = useAuth();
 
     useEffect(() => {
         if (isEdit) {
             fetchPost();
         }
     }, [id]);
+
+    useEffect(() => {
+        if (!user) {
+            navigate('/login');
+        }
+    }, [user, navigate]);
 
     const fetchPost = async () => {
         try {

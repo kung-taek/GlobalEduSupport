@@ -301,6 +301,10 @@ const PostDetail: React.FC = () => {
 
     const handleCommentSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!user) {
+            navigate('/login');
+            return;
+        }
         if (parentCommentId) return; // 답글 입력 중에는 메인 댓글 작성 방지
         try {
             await axios.post(
@@ -324,6 +328,10 @@ const PostDetail: React.FC = () => {
     };
 
     const handleReplySubmit = async (parentId: number) => {
+        if (!user) {
+            navigate('/login');
+            return;
+        }
         try {
             await axios.post(
                 `${process.env.REACT_APP_BACKEND_URL}/api/posts/${id}/comments`,
@@ -367,6 +375,20 @@ const PostDetail: React.FC = () => {
             // 삭제 API 호출 등
             alert('댓글 삭제 기능은 추후 구현 예정입니다.');
         }
+    };
+
+    // 댓글 입력창 클릭 시 로그인 체크
+    const handleCommentInputFocus = () => {
+        if (!user) navigate('/login');
+    };
+
+    // 답글 버튼 클릭 시 로그인 체크
+    const handleReplyClick = (commentId: number) => {
+        if (!user) {
+            navigate('/login');
+            return;
+        }
+        setParentCommentId(commentId);
     };
 
     if (!post) return <div style={{ textAlign: 'center', color: '#aaa', padding: '60px 0' }}>로딩중...</div>;
@@ -437,6 +459,8 @@ const PostDetail: React.FC = () => {
                             user={user}
                             handleEditComment={handleEditComment}
                             handleDeleteComment={handleDeleteComment}
+                            handleReplyClick={handleReplyClick}
+                            handleCommentInputFocus={handleCommentInputFocus}
                         />
                     ))}
                 </CommentList>
@@ -444,6 +468,7 @@ const PostDetail: React.FC = () => {
                     <CommentInput
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
+                        onFocus={handleCommentInputFocus}
                         placeholder={mainTexts['plasecomment'] || '댓글을 작성하세요...'}
                     />
                     <Button type="submit">{mainTexts['postcommentok']}</Button>
@@ -467,6 +492,8 @@ interface CommentTreeItemProps {
     user: any;
     handleEditComment: (id: number) => void;
     handleDeleteComment: (id: number) => void;
+    handleReplyClick: (id: number) => void;
+    handleCommentInputFocus: () => void;
 }
 const CommentTreeItem: React.FC<CommentTreeItemProps> = ({
     comment,
@@ -481,6 +508,8 @@ const CommentTreeItem: React.FC<CommentTreeItemProps> = ({
     user,
     handleEditComment,
     handleDeleteComment,
+    handleReplyClick,
+    handleCommentInputFocus,
 }) => (
     <div style={{ marginLeft: depth === 0 ? 0 : 32, marginTop: 8 }}>
         <Comment>
@@ -497,7 +526,7 @@ const CommentTreeItem: React.FC<CommentTreeItemProps> = ({
                         </span>
                     )}
                 </div>
-                <Button onClick={() => setParentCommentId(comment.id)}>{mainTexts['postcommentcomment']}</Button>
+                <Button onClick={() => handleReplyClick(comment.id)}>{mainTexts['postcommentcomment']}</Button>
             </CommentHeader>
             <CommentContent>{comment.content}</CommentContent>
         </Comment>
@@ -512,6 +541,7 @@ const CommentTreeItem: React.FC<CommentTreeItemProps> = ({
                 <CommentInput
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
+                    onFocus={handleCommentInputFocus}
                     placeholder={mainTexts['pleasecommentcomment'] || '답글을 작성하세요...'}
                 />
                 <Button type="submit">{mainTexts['postcommentcommentok']}</Button>
@@ -540,6 +570,8 @@ const CommentTreeItem: React.FC<CommentTreeItemProps> = ({
                     user={user}
                     handleEditComment={handleEditComment}
                     handleDeleteComment={handleDeleteComment}
+                    handleReplyClick={handleReplyClick}
+                    handleCommentInputFocus={handleCommentInputFocus}
                 />
             ))}
     </div>

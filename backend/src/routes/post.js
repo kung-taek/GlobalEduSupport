@@ -25,8 +25,7 @@ router.post('/:id/like', authenticateToken, postController.likePost);
 router.get('/search', postController.searchPosts);
 
 // 댓글 작성
-router.post('/:i
-    d/comments', authenticateToken, postController.createComment);
+router.post('/:id/comments', authenticateToken, postController.createComment);
 
 // 댓글 수정
 router.put('/comments/:id', authenticateToken, postController.updateComment);
