@@ -34,7 +34,10 @@ const MENU_STRUCTURE = [
         key: 'etc_category',
         labelKey: 'etc_category',
         defaultLabel: '기타',
-        children: [{ key: 'emergency_number', labelKey: 'emergency_number', defaultLabel: '긴급 전화번호' }],
+        children: [
+            { key: 'emergency_number', labelKey: 'emergency_number', defaultLabel: '긴급 전화번호' },
+            { key: 'community', labelKey: 'community', defaultLabel: '커뮤니티' },
+        ],
     },
 ];
 

@@ -16,6 +16,7 @@ import kakaoRouter from './routes/kakao.js';
 import authRouter from './routes/auth.js';
 import gptKakaoRouter from './routes/gptKakao.js';
 import uiTextsRouter from './routes/uiTexts.js';
+import postRouter from './routes/post.js';
 
 // ESM 환경에서 __dirname 설정
 const __filename = fileURLToPath(import.meta.url);
@@ -75,6 +76,7 @@ app.use('/api/kakao', kakaoRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/gpt-kakao', gptKakaoRouter);
 app.use('/api/ui-texts', uiTextsRouter);
+app.use('/api/posts', postRouter);
 
 // 문자열을 안전하게 이스케이프하는 함수 추가
 function escapeHtml(text) {

@@ -144,6 +144,7 @@ const MENU_STRUCTURE = [
     { key: 'dining_etiquette', labelKey: 'dining_etiquette', defaultLabel: '식사 예절', path: '/dining-etiquette' },
     { key: 'dialect', labelKey: 'dialect', defaultLabel: '사투리', path: '/dialect' },
     { key: 'emergency_number', labelKey: 'emergency_number', defaultLabel: '긴급 전화번호', path: '/emergency-number' },
+    { key: 'community', labelKey: 'community', defaultLabel: '커뮤니티', path: '/community' },
 ];
 
 const MainHome: React.FC = () => {

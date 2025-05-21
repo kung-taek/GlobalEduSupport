@@ -14,6 +14,9 @@ import DiningEtiquette from './components/DiningEtiquette';
 import Dialect from './components/Dialect';
 import EmergencyNumber from './components/EmergencyNumber';
 import MainHome from './components/MainHome';
+import PostList from './components/Post/PostList';
+import PostDetail from './components/Post/PostDetail';
+import PostForm from './components/Post/PostForm';
 
 interface Place {
     place_name: string;
@@ -259,6 +262,8 @@ const SearchBoxUI: React.FC<{
     setMapPath: (path: number[]) => void;
     gptAnswer: string;
     setGptAnswer: (ans: string) => void;
+    gptOriginalAnswer: string;
+    setGptOriginalAnswer: (ans: string) => void;
     gptRoutePath: number[];
     setGptRoutePath: (path: number[]) => void;
     showGptRoute: boolean;
@@ -278,6 +283,8 @@ const SearchBoxUI: React.FC<{
     setMapPath,
     gptAnswer,
     setGptAnswer,
+    gptOriginalAnswer,
+    setGptOriginalAnswer,
     gptRoutePath,
     setGptRoutePath,
     showGptRoute,
@@ -302,6 +309,7 @@ const SearchBoxUI: React.FC<{
     const [dragging, setDragging] = useState(false);
     const [dragStart, setDragStart] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
     const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+    const [showRouteBtn, setShowRouteBtn] = useState(false);
 
     useEffect(() => {
         const onMouseMove = (e: MouseEvent) => {
@@ -381,26 +389,35 @@ const SearchBoxUI: React.FC<{
             return;
         }
         try {
-            // 출발지와 도착지를 한국어로 번역
-            const translateRes = await fetch(`${API_URL}/api/gpt`, {
+            // 출발지와 도착지를 각각 한국어로 번역
+            const translateStartRes = await fetch(`${API_URL}/api/gpt`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
                 body: JSON.stringify({
-                    message: `다음 장소명들을 한국어로 번역해줘. 출발지: ${start}, 도착지: ${end}`,
+                    message: `다음 장소명을 한국어로 번역해줘. 번역된 장소명만 출력해줘: ${start}`,
                     locale: 'ko',
                 }),
             });
-            const translateData = await translateRes.json();
-            const translatedText = translateData.reply || '';
+            const translateStartData = await translateStartRes.json();
+            const translatedStart = translateStartData.reply?.trim() || start;
 
-            // 번역된 텍스트에서 출발지와 도착지 추출
-            const places = extractPlacesFromText(translatedText);
-            if (!places) {
+            const translateEndRes = await fetch(`${API_URL}/api/gpt`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    message: `다음 장소명을 한국어로 번역해줘. 번역된 장소명만 출력해줘: ${end}`,
+                    locale: 'ko',
+                }),
+            });
+            const translateEndData = await translateEndRes.json();
+            const translatedEnd = translateEndData.reply?.trim() || end;
+
+            if (!translatedStart || !translatedEnd) {
                 alert('장소를 번역할 수 없습니다.');
                 return;
             }
-            const [translatedStart, translatedEnd] = places;
 
             // 번역된 장소명으로 경로 검색
             const result = await searchRoute(translatedStart, translatedEnd);
@@ -427,30 +444,49 @@ const SearchBoxUI: React.FC<{
 
     const handleGptSend = async () => {
         try {
-            // 항상 자연어 답변(번역 포함)만 받음
-            const res = await fetch(`${API_URL}/api/gpt`, {
+            // 먼저 한국어로 답변 받기
+            const originalRes = await fetch(`${API_URL}/api/gpt`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify({ message: question, locale: currentLang }),
+                body: JSON.stringify({ message: question, locale: 'ko' }),
             });
-            const data = await res.json();
-            setGptAnswer(data.reply || '답변이 없습니다.');
-            setExtractedPlaces(extractPlacesFromText(data.reply || ''));
+            const originalData = await originalRes.json();
+            const originalAnswer = originalData.reply || '';
+            setGptOriginalAnswer(originalAnswer);
+            setExtractedPlaces(extractPlacesFromText(originalAnswer));
+
+            // 사용자 언어로 번역된 답변 받기
+            if (currentLang !== 'ko') {
+                const res = await fetch(`${API_URL}/api/gpt`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ message: question, locale: currentLang }),
+                });
+                const data = await res.json();
+                setGptAnswer(data.reply || originalAnswer);
+            } else {
+                setGptAnswer(originalAnswer);
+            }
+
             setGptRoutePath([]);
             setShowGptRoute(false);
+            setShowRouteBtn(true);
         } catch (e: any) {
             setGptAnswer('질문 처리 실패');
+            setGptOriginalAnswer('');
             setExtractedPlaces(null);
             setGptRoutePath([]);
             setShowGptRoute(false);
+            setShowRouteBtn(false);
         }
     };
 
     const handleShowRoute = async () => {
-        // 현재 답변에서 장소 추출
-        if (gptAnswer) {
-            const places = extractPlacesFromText(gptAnswer);
+        // 원본 답변(한국어)에서 장소 추출
+        if (gptOriginalAnswer) {
+            const places = extractPlacesFromText(gptOriginalAnswer);
             if (places) {
                 const [from, to] = places;
                 try {
@@ -590,17 +626,19 @@ const App: React.FC = () => {
     const sidebarCurrentY = useRef(0);
     const [mapAddress, setMapAddress] = useState<any>(null);
     const [mapPath, setMapPath] = useState<number[]>([]);
-    const [gptAnswer, setGptAnswer] = useState('');
+    const [gptAnswer, setGptAnswer] = useState<string>('');
+    const [gptOriginalAnswer, setGptOriginalAnswer] = useState<string>('');
     const [showRouteBtn, setShowRouteBtn] = useState(false);
     const [gptRoutePath, setGptRoutePath] = useState<number[]>([]);
     const [showGptRoute, setShowGptRoute] = useState(false);
-    const PANEL_WIDTH = 380; // FloatingPanel의 width와 동일하게
+    const [extractedPlaces, setExtractedPlaces] = useState<[string, string] | null>(null);
+    const PANEL_WIDTH = 380;
     const [boxPosition, setBoxPosition] = useState<{ x: number; y: number }>(() => ({
         x: window.innerWidth <= 768 ? 0 : Math.max((window.innerWidth - PANEL_WIDTH) / 2, 0),
         y: 0,
     }));
     const [routeRecommendation, setRouteRecommendation] = useState<string>('');
-    const [showRecommendationPanel, setShowRecommendationPanel] = useState(false); // 모바일용
+    const [showRecommendationPanel, setShowRecommendationPanel] = useState(false);
     const [menuIconPos, setMenuIconPos] = useState<{ x: number; y: number }>({ x: 16, y: 24 });
     const [menuIconDragging, setMenuIconDragging] = useState(false);
     const [menuIconDragStart, setMenuIconDragStart] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -906,6 +944,8 @@ const App: React.FC = () => {
                                     setMapPath={setMapPath}
                                     gptAnswer={gptAnswer}
                                     setGptAnswer={setGptAnswer}
+                                    gptOriginalAnswer={gptOriginalAnswer}
+                                    setGptOriginalAnswer={setGptOriginalAnswer}
                                     gptRoutePath={gptRoutePath}
                                     setGptRoutePath={setGptRoutePath}
                                     showGptRoute={showGptRoute}
@@ -1017,6 +1057,10 @@ const App: React.FC = () => {
                 <Route path="/emergency-number" element={<EmergencyNumber />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/community" element={<PostList />} />
+                <Route path="/community/post/:id" element={<PostDetail />} />
+                <Route path="/community/write" element={<PostForm />} />
+                <Route path="/community/edit/:id" element={<PostForm />} />
             </Routes>
         </AppContainer>
     );
