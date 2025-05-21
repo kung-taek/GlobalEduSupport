@@ -243,3 +243,24 @@ export const checkLevelUp = async (req, res) => {
         res.status(500).json({ message: '레벨업 체크 중 오류가 발생했습니다.' });
     }
 };
+
+// 게시글 상세 조회
+export const getPost = async (req, res) => {
+    try {
+        const postId = req.params.id;
+        const [rows] = await pool.query(
+            `SELECT p.*, u.username, u.level
+             FROM posts p
+             JOIN users u ON p.user_id = u.id
+             WHERE p.id = ?`,
+            [postId]
+        );
+        if (rows.length === 0) {
+            return res.status(404).json({ message: '게시글을 찾을 수 없습니다.' });
+        }
+        res.json(rows[0]);
+    } catch (error) {
+        console.error('게시글 상세 조회 에러:', error);
+        res.status(500).json({ message: '게시글 상세 조회 중 오류가 발생했습니다.' });
+    }
+};

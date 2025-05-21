@@ -36,4 +36,7 @@ router.delete('/comments/:id', authenticateToken, postController.deleteComment);
 // 레벨업 체크
 router.get('/check-level', authenticateToken, postController.checkLevelUp);
 
+// 게시글 상세 조회
+router.get('/:id', postController.getPost);
+
 export default router;

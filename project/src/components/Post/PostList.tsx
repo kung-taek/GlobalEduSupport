@@ -160,7 +160,10 @@ const PostList: React.FC = () => {
                 >
                     {mainTexts['findpostlist'] || '검색'}
                 </ActionTextButton>
-                <ActionTextButton title={mainTexts['writing'] || '글쓰기'} onClick={() => navigate('/community/write')}>
+                <ActionTextButton
+                    title={mainTexts['writing'] || '글쓰기'}
+                    onClick={() => navigate('/community/write', { state: { boardType: activeTab } })}
+                >
                     {mainTexts['writing'] || '글쓰기'}
                 </ActionTextButton>
             </ActionBar>
