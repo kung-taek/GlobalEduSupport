@@ -622,6 +622,9 @@ app.post('/update-column', async (req, res) => {
     }
 });
 
+// 새로운 엔드포인트 추가
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
 // DB 연결 확인 후 서버 시작
 const PORT = process.env.PORT || 5000;
 

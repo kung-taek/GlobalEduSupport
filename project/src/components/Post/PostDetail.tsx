@@ -357,7 +357,9 @@ const PostDetail: React.FC = () => {
     const handleDelete = async () => {
         if (window.confirm('정말 삭제하시겠습니까?')) {
             try {
-                await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/posts/${id}`);
+                await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/posts/${id}`, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                });
                 navigate('/community');
             } catch (error) {
                 console.error('게시글 삭제 실패:', error);
