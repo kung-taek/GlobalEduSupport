@@ -1,5 +1,16 @@
 import { pool } from '../models/database.js';
 
+// 경험치 증가 후 레벨업 체크 함수
+async function checkLevelUpForUser(user_id) {
+    // 사용자의 현재 경험치와 레벨 조회
+    const [user] = await pool.query('SELECT exp, level FROM users WHERE id = ?', [user_id]);
+    // 다음 레벨의 필요 경험치 조회
+    const [nextLevel] = await pool.query('SELECT required_exp FROM user_levels WHERE level = ?', [user[0].level + 1]);
+    if (nextLevel.length > 0 && user[0].exp >= nextLevel[0].required_exp) {
+        await pool.query('UPDATE users SET level = level + 1 WHERE id = ?', [user_id]);
+    }
+}
+
 // 게시글 작성
 export const createPost = async (req, res) => {
     try {
@@ -15,6 +26,7 @@ export const createPost = async (req, res) => {
 
         // 작성자 경험치 증가 (게시글 작성 +10)
         await pool.query('UPDATE users SET exp = exp + 10 WHERE id = ?', [user_id]);
+        await checkLevelUpForUser(user_id);
 
         res.status(201).json({ message: '게시글이 작성되었습니다.', postId: result.insertId });
     } catch (error) {
@@ -107,6 +119,7 @@ export const likePost = async (req, res) => {
         // 작성자 경험치 증가 (추천 받음 +5)
         const [post] = await pool.query('SELECT user_id FROM posts WHERE id = ?', [postId]);
         await pool.query('UPDATE users SET exp = exp + 5 WHERE id = ?', [post[0].user_id]);
+        await checkLevelUpForUser(post[0].user_id);
 
         res.json({ message: '게시글을 추천했습니다.' });
     } catch (error) {
@@ -163,6 +176,7 @@ export const createComment = async (req, res) => {
 
         // 작성자 경험치 증가 (댓글 작성 +5)
         await pool.query('UPDATE users SET exp = exp + 5 WHERE id = ?', [user_id]);
+        await checkLevelUpForUser(user_id);
 
         res.status(201).json({ message: '댓글이 작성되었습니다.', commentId: result.insertId });
     } catch (error) {

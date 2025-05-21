@@ -17,9 +17,17 @@ interface Post {
 }
 
 const Container = styled.div`
-    max-width: 600px;
+    width: 50vw;
+    min-width: 400px;
+    max-width: 1000px;
     margin: 0 auto;
     padding: 30px 0 0 0;
+    @media (max-width: 768px) {
+        width: 100vw;
+        min-width: unset;
+        max-width: 100vw;
+        padding: 0 0 80px 0;
+    }
 `;
 
 const Form = styled.form`

@@ -34,9 +34,9 @@ const TopTabs = styled.div`
     justify-content: center;
     align-items: center;
     gap: 10px;
-    padding: 18px 0 10px 0;
+    padding: 0;
     background: #fff;
-    border-bottom: 1px solid #eee;
+    /* border-bottom: 1px solid #eee; */
 `;
 
 const Tab = styled.button<{ active: boolean }>`
@@ -53,25 +53,28 @@ const Tab = styled.button<{ active: boolean }>`
 
 const ActionBar = styled.div`
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    padding: 12px 0 8px 0;
-    background: #fff;
-    border-bottom: 1px solid #eee;
+    gap: 0;
+    padding: 0;
+    background: #23272f;
+    /* border-bottom: 1px solid #eee; */
 `;
 
 const ActionTextButton = styled.button`
-    background: none;
+    background: #23272f;
     border: none;
-    padding: 6px 14px;
+    padding: 8px 0;
     font-size: 1.08rem;
-    color: #23272f;
+    color: #fff;
     cursor: pointer;
     font-weight: bold;
-    border-radius: 6px;
+    border-radius: 0;
+    width: 50%;
+    transition: background 0.2s, color 0.2s;
     &:hover {
-        background: #f0f4fa;
-        color: #0078ff;
+        background: #444;
+        color: #fff;
     }
 `;
 
@@ -84,11 +87,17 @@ const List = styled.ul`
 const ListItem = styled.li`
     display: flex;
     flex-direction: column;
-    border-bottom: 1px solid #eee;
-    padding: 16px 0;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background: #fff;
+    margin-bottom: 16px;
+    padding: 16px 20px;
     cursor: pointer;
+    transition: box-shadow 0.15s, border 0.15s;
     &:hover {
         background: #f8f9fa;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        border: 1.5px solid #0078ff;
     }
 `;
 
