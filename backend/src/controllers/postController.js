@@ -1,4 +1,4 @@
-import pool from '../config/database.js';
+import { pool } from '../models/database.js';
 
 // 게시글 작성
 export const createPost = async (req, res) => {
