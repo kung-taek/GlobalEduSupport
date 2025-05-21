@@ -6,9 +6,17 @@ import { useAuth } from '../../hooks/useAuth';
 import { useTranslation } from '../../contexts/TranslationContext';
 
 const Container = styled.div`
-    padding: 20px;
+    width: 50vw;
+    min-width: 400px;
     max-width: 1000px;
     margin: 0 auto;
+    padding: 20px;
+    @media (max-width: 768px) {
+        width: 100vw;
+        min-width: unset;
+        max-width: 100vw;
+        padding: 20px 0;
+    }
 `;
 
 const PostContainer = styled.div`
@@ -163,7 +171,11 @@ const PostDetail: React.FC = () => {
 
     const handleLike = async () => {
         try {
-            await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/posts/${id}/like`);
+            await axios.post(
+                `${process.env.REACT_APP_BACKEND_URL}/api/posts/${id}/like`,
+                {},
+                { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+            );
             fetchPost();
         } catch (error) {
             console.error('추천 실패:', error);
@@ -173,10 +185,14 @@ const PostDetail: React.FC = () => {
     const handleCommentSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/posts/${id}/comments`, {
-                content: newComment,
-                parent_id: parentCommentId,
-            });
+            await axios.post(
+                `${process.env.REACT_APP_BACKEND_URL}/api/posts/${id}/comments`,
+                {
+                    content: newComment,
+                    parent_id: parentCommentId,
+                },
+                { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+            );
             setNewComment('');
             setParentCommentId(null);
             fetchComments();

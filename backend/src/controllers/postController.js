@@ -150,7 +150,8 @@ export const searchPosts = async (req, res) => {
 // 댓글 작성
 export const createComment = async (req, res) => {
     try {
-        const { post_id, content, parent_id } = req.body;
+        const post_id = req.params.id;
+        const { content, parent_id } = req.body;
         const user_id = req.user.id;
 
         const query = `
