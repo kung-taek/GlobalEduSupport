@@ -714,6 +714,7 @@ const App: React.FC = () => {
         else if (category === 'dining_etiquette') navigate('/dining-etiquette');
         else if (category === 'dialect') navigate('/dialect');
         else if (category === 'emergency_number') navigate('/emergency-number');
+        else if (category === 'community') navigate('/community');
         setCurrentCategory(category);
         setIsMenuOpen(false);
     };

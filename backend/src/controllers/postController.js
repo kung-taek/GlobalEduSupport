@@ -120,7 +120,7 @@ export const searchPosts = async (req, res) => {
     try {
         const { keyword, board_type } = req.query;
         let query = `
-            SELECT p.*, u.username 
+            SELECT p.*, u.username, u.level 
             FROM posts p 
             JOIN users u ON p.user_id = u.id 
             WHERE 1=1

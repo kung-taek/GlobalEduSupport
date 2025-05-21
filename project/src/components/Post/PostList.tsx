@@ -12,6 +12,7 @@ interface Post {
     likes: number;
     comments_count: number;
     created_at: string;
+    level: number;
 }
 
 const Container = styled.div`
@@ -143,6 +144,22 @@ const PostList: React.FC = () => {
         setLoading(false);
     };
 
+    function formatPostDate(dateString: string) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const isToday =
+            date.getFullYear() === now.getFullYear() &&
+            date.getMonth() === now.getMonth() &&
+            date.getDate() === now.getDate();
+        if (isToday) {
+            const hour = date.getHours().toString().padStart(2, '0');
+            const min = date.getMinutes().toString().padStart(2, '0');
+            return `${hour}:${min}`;
+        } else {
+            return `${date.getFullYear()}. ${date.getMonth() + 1}. ${date.getDate()}`;
+        }
+    }
+
     return (
         <Container>
             <TopTabs>
@@ -187,10 +204,13 @@ const PostList: React.FC = () => {
                                 {post.comments_count > 0 && <CommentCount>[{post.comments_count}]</CommentCount>}
                             </TitleRow>
                             <InfoRow>
-                                <span>{post.username}</span>
+                                <span>
+                                    {post.username}{' '}
+                                    <span style={{ color: '#0078ff', fontWeight: 700 }}>Lv.{post.level}</span>
+                                </span>
                                 <span>조회 {post.views}</span>
                                 <span>추천 {post.likes}</span>
-                                <span>{new Date(post.created_at).toLocaleString('ko-KR', { hour12: false })}</span>
+                                <span>{formatPostDate(post.created_at)}</span>
                             </InfoRow>
                         </ListItem>
                     ))

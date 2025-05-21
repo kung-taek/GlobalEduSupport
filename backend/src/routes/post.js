@@ -39,7 +39,7 @@ router.get('/check-level', authenticateToken, postController.checkLevelUp);
 // 댓글 조회
 router.get('/:id/comments', postController.getComments);
 
-// 게시글 상세 조회 (항상 마지막에!)
+// 게시글 상세 조회
 router.get('/:id', postController.getPost);
 
 export default router;
