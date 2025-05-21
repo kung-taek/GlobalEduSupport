@@ -192,6 +192,11 @@ const PostForm: React.FC = () => {
                         placeholder={mainTexts['posttitleplease'] || '제목을 입력해 주세요.'}
                     />
                 </FormGroup>
+                {imagePreview && (
+                    <ImagePreview>
+                        <img src={imagePreview} alt={mainTexts['selectimage'] || '이미지 선택'} />
+                    </ImagePreview>
+                )}
                 <FormGroup>
                     <Label>{mainTexts['postbody'] || '내용'}</Label>
                     <TextArea
@@ -222,11 +227,6 @@ const PostForm: React.FC = () => {
                             {image ? image.name : mainTexts['postnotselectedimage'] || '선택된 파일 없음.'}
                         </span>
                     </div>
-                    {imagePreview && (
-                        <ImagePreview>
-                            <img src={imagePreview} alt={mainTexts['selectimage'] || '이미지 선택'} />
-                        </ImagePreview>
-                    )}
                 </FormGroup>
                 <ButtonGroup>
                     <Button type="submit">

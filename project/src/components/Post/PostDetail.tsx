@@ -410,9 +410,9 @@ const PostDetail: React.FC = () => {
                         <span style={{ cursor: 'pointer' }} onClick={() => navigate('/community')}>
                             {mainTexts['topostlist']}
                         </span>
-                        <span>|</span>
                         {user && user.username === post.username && (
                             <>
+                                <span>|</span>
                                 <span onClick={handleEdit}>{mainTexts['postupdate']}</span>
                                 <span>|</span>
                                 <span onClick={handleDelete}>{mainTexts['postdelete']}</span>
@@ -487,9 +487,15 @@ const CommentTreeItem: React.FC<CommentTreeItemProps> = ({
             <CommentHeader>
                 <div>
                     <strong>{comment.username}</strong>
-                    <span style={{ marginLeft: '10px', color: '#666' }}>
-                        {new Date(comment.created_at).toLocaleDateString()}
-                    </span>
+                    <span style={{ marginLeft: '10px', color: '#666' }}>{formatDate(comment.created_at)}</span>
+                    {user && user.username === comment.username && (
+                        <span
+                            onClick={() => handleDeleteComment(comment.id)}
+                            style={{ marginLeft: 12, color: '#888', fontSize: '0.95rem', cursor: 'pointer' }}
+                        >
+                            {mainTexts['postdelete']}
+                        </span>
+                    )}
                 </div>
                 <Button onClick={() => setParentCommentId(comment.id)}>{mainTexts['postcommentcomment']}</Button>
             </CommentHeader>
@@ -536,13 +542,6 @@ const CommentTreeItem: React.FC<CommentTreeItemProps> = ({
                     handleDeleteComment={handleDeleteComment}
                 />
             ))}
-        {user && user.username === comment.username && (
-            <CommentActions>
-                <span onClick={() => handleEditComment(comment.id)}>수정</span>
-                <span>|</span>
-                <span onClick={() => handleDeleteComment(comment.id)}>삭제</span>
-            </CommentActions>
-        )}
     </div>
 );
 
