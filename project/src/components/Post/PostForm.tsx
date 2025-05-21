@@ -181,7 +181,7 @@ const PostForm: React.FC = () => {
                     headers,
                 });
             }
-            navigate('/community');
+            navigate(`/community?board_type=${boardType}`);
         } catch (error) {
             console.error('게시글 저장 실패:', error);
         }
@@ -240,7 +240,7 @@ const PostForm: React.FC = () => {
                     <Button type="submit">
                         {isEdit ? mainTexts['postpost'] || '작성하기' : mainTexts['postpost'] || '작성하기'}
                     </Button>
-                    <CancelButton type="button" onClick={() => navigate('/community')}>
+                    <CancelButton type="button" onClick={() => navigate(`/community?board_type=${boardType}`)}>
                         {mainTexts['postcancel'] || '취소'}
                     </CancelButton>
                 </ButtonGroup>

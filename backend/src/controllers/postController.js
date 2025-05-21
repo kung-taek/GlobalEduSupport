@@ -137,7 +137,8 @@ export const searchPosts = async (req, res) => {
     try {
         const { keyword, board_type } = req.query;
         let query = `
-            SELECT p.*, u.username, u.level 
+            SELECT p.*, u.username, u.level, 
+                (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comments_count
             FROM posts p 
             JOIN users u ON p.user_id = u.id 
             WHERE 1=1

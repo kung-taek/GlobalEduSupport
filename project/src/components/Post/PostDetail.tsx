@@ -355,12 +355,13 @@ const PostDetail: React.FC = () => {
     };
 
     const handleDelete = async () => {
+        if (!post) return;
         if (window.confirm('정말 삭제하시겠습니까?')) {
             try {
                 await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/posts/${id}`, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
                 });
-                navigate('/community');
+                navigate(`/community?board_type=${post.board_type}`);
             } catch (error) {
                 console.error('게시글 삭제 실패:', error);
             }
@@ -396,6 +397,9 @@ const PostDetail: React.FC = () => {
 
     if (!post) return <div style={{ textAlign: 'center', color: '#aaa', padding: '60px 0' }}>로딩중...</div>;
 
+    const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
+    const imageUrl = post.image_url?.startsWith('http') ? post.image_url : backendUrl + post.image_url;
+
     return (
         <Container>
             <PostContainer>
@@ -424,7 +428,7 @@ const PostDetail: React.FC = () => {
                 {post.image_url && (
                     <div style={{ marginBottom: 18 }}>
                         <img
-                            src={post.image_url}
+                            src={imageUrl}
                             alt="post"
                             style={{ maxWidth: '100%', maxHeight: 320, borderRadius: 8, border: '1px solid #eee' }}
                         />
@@ -441,7 +445,10 @@ const PostDetail: React.FC = () => {
                         </Button>
                     </ButtonGroup>
                     <PostActions>
-                        <span style={{ cursor: 'pointer' }} onClick={() => navigate('/community')}>
+                        <span
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => navigate(`/community?board_type=${post.board_type}`)}
+                        >
                             {mainTexts['topostlist']}
                         </span>
                         {user && user.username === post.username && (

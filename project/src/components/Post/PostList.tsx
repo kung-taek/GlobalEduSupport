@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useTranslation } from '../../contexts/TranslationContext';
 
@@ -139,26 +139,35 @@ const EmptyBox = styled.div`
 const PostList: React.FC = () => {
     const { texts } = useTranslation();
     const mainTexts = texts['main'] || {};
-    const [activeTab, setActiveTab] = useState<'free' | 'info'>('free');
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // URL 파라미터에서 board_type을 가져옴
+    const params = new URLSearchParams(location.search);
+    const boardType = params.get('board_type') || 'free';
 
     useEffect(() => {
         fetchPosts();
-    }, [activeTab]);
+    }, [boardType]);
 
     const fetchPosts = async () => {
         setLoading(true);
         try {
             const response = await axios.get<Post[]>(
-                `${process.env.REACT_APP_BACKEND_URL}/api/posts/search?board_type=${activeTab}`
+                `${process.env.REACT_APP_BACKEND_URL}/api/posts/search?board_type=${boardType}`
             );
             setPosts(response.data);
         } catch (error) {
             console.error('게시글 목록 조회 실패:', error);
         }
         setLoading(false);
+    };
+
+    // 게시판 타입 변경 시 URL 업데이트
+    const handleTabChange = (type: 'free' | 'info') => {
+        navigate(`/community?board_type=${type}`);
     };
 
     function formatPostDate(dateString: string) {
@@ -180,10 +189,10 @@ const PostList: React.FC = () => {
     return (
         <Container>
             <TopTabs>
-                <Tab active={activeTab === 'free'} onClick={() => setActiveTab('free')}>
+                <Tab active={boardType === 'free'} onClick={() => handleTabChange('free')}>
                     {mainTexts['freepost'] || '자유게시판'}
                 </Tab>
-                <Tab active={activeTab === 'info'} onClick={() => setActiveTab('info')}>
+                <Tab active={boardType === 'info'} onClick={() => handleTabChange('info')}>
                     {mainTexts['infopost'] || '정보게시판'}
                 </Tab>
             </TopTabs>
@@ -196,7 +205,7 @@ const PostList: React.FC = () => {
                 </ActionTextButton>
                 <ActionTextButton
                     title={mainTexts['writing'] || '글쓰기'}
-                    onClick={() => navigate('/community/write', { state: { boardType: activeTab } })}
+                    onClick={() => navigate('/community/write', { state: { boardType } })}
                 >
                     {mainTexts['writing'] || '글쓰기'}
                 </ActionTextButton>
@@ -221,12 +230,22 @@ const PostList: React.FC = () => {
                                 {post.comments_count > 0 && <CommentCount>[{post.comments_count}]</CommentCount>}
                             </TitleRow>
                             <InfoRow>
+                                <span>{post.username}</span>
+                                <span>|</span>
+                                <span>Lv.{post.level}</span>
+                                <span>|</span>
                                 <span>
-                                    {post.username}{' '}
-                                    <span style={{ color: '#0078ff', fontWeight: 700 }}>Lv.{post.level}</span>
+                                    {mainTexts['lookcount'] || '조회'} {post.views}
                                 </span>
-                                <span>조회 {post.views}</span>
-                                <span>추천 {post.likes}</span>
+                                <span>|</span>
+                                <span>
+                                    {mainTexts['postrespect'] || '추천'} {post.likes}
+                                </span>
+                                <span>|</span>
+                                <span>
+                                    {mainTexts['postcomment'] || '댓글'} {post.comments_count ?? 0}
+                                </span>
+                                <span>|</span>
                                 <span>{formatPostDate(post.created_at)}</span>
                             </InfoRow>
                         </ListItem>
