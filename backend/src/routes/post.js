@@ -33,13 +33,13 @@ router.put('/comments/:id', authenticateToken, postController.updateComment);
 // 댓글 삭제
 router.delete('/comments/:id', authenticateToken, postController.deleteComment);
 
-// 댓글 조회
-router.get('/:id/comments', postController.getComments);
-
 // 레벨업 체크
 router.get('/check-level', authenticateToken, postController.checkLevelUp);
 
-// 게시글 상세 조회
+// 댓글 조회
+router.get('/:id/comments', postController.getComments);
+
+// 게시글 상세 조회 (항상 마지막에!)
 router.get('/:id', postController.getPost);
 
 export default router;
